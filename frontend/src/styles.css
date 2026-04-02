@@ -1,0 +1,175 @@
+﻿@import '@fullcalendar/daygrid/index.css';
+@import '@fullcalendar/timegrid/index.css';
+
+:root {
+  --bg: #f7f1e4;
+  --ink: #132033;
+  --brand: #0f766e;
+  --brand-2: #155e75;
+  --surface: #fffefb;
+  --line: #dacdb7;
+  --available: #d1fae5;
+  --booked: #fee2e2;
+  --blocked: #e5e7eb;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at 10% 10%, #fff8e7, var(--bg));
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+.sidebar {
+  background: linear-gradient(165deg, var(--brand), var(--brand-2));
+  color: #fff;
+  padding: 28px 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.brand h1 { margin: 0; font-size: 36px; line-height: 1; }
+.brand p { margin: 6px 0 18px; opacity: 0.85; font-weight: 600; }
+
+.sidebar nav { display: grid; gap: 10px; }
+.nav-link {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+  transition: 160ms ease;
+}
+.nav-link:hover { transform: translateX(2px); background: rgba(255,255,255,0.2); }
+.nav-link.active { background: #ffffff; color: var(--brand); }
+
+.content { padding: 22px; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid.two-col { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 8px 20px rgba(20, 40, 30, 0.04);
+}
+.card.wide { grid-column: 1 / -1; }
+.card h2 { margin: 0 0 14px; }
+
+input, select, button {
+  width: 100%;
+  margin-top: 9px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  font: inherit;
+}
+button {
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--brand), var(--brand-2));
+}
+button:hover { filter: brightness(1.05); cursor: pointer; }
+
+.filters { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.legend { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border-radius: 999px; padding: 5px 10px; font-size: 12px; border: 1px solid #bbb; }
+.chip.available { background: var(--available); }
+.chip.booked { background: var(--booked); }
+.chip.blocked { background: var(--blocked); }
+
+.calendar-grid { margin-top: 14px; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.day-card { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: #fff; }
+.day-card h4 { margin: 0 0 8px; }
+.event { padding: 7px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+.event.available { background: var(--available); }
+.event.booked { background: var(--booked); }
+.event.blocked { background: var(--blocked); }
+
+.list { margin: 12px 0 0; padding-left: 18px; }
+pre { background: #f5f7fa; border-radius: 10px; padding: 10px; white-space: pre-wrap; }
+
+.hint {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #3b556e;
+}
+
+.summary-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #b6d2de;
+  background: #f2fbff;
+  font-size: 14px;
+}
+
+.status {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  border: 1px solid transparent;
+}
+
+.status.info {
+  background: #ecfeff;
+  border-color: #bae6fd;
+}
+
+.status.warning {
+  background: #fefce8;
+  border-color: #fde68a;
+}
+
+.status.error {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #9f1239;
+}
+
+.calendar-shell {
+  margin-top: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.fc .fc-button {
+  border: none;
+  border-radius: 9px;
+  background: #14597a;
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+button.danger {
+  background: linear-gradient(120deg, #b91c1c, #dc2626);
+}
+
+@media (max-width: 960px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar nav { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+  .action-row { grid-template-columns: 1fr; }
+}

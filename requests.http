@@ -1,0 +1,37 @@
+﻿### Health
+GET http://localhost:3000/health
+
+### Projects
+GET http://localhost:3000/api/projects
+
+### Availability
+GET http://localhost:3000/api/availability
+
+### Book
+POST http://localhost:3000/api/book
+Content-Type: application/json
+
+{
+  "projectId": 1,
+  "executiveId": 1,
+  "availabilityId": 1,
+  "clientName": "Cliente Demo",
+  "clientEmail": "cliente@demo.com"
+}
+
+### Reschedule
+PUT http://localhost:3000/api/reschedule
+Content-Type: application/json
+
+{
+  "visitId": 1,
+  "newAvailabilityId": 2
+}
+
+### Cancel
+DELETE http://localhost:3000/api/cancel
+Content-Type: application/json
+
+{
+  "visitId": 1
+}
