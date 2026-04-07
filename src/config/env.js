@@ -1,9 +1,8 @@
-﻿const path = require('path');
-
-const ENV = {
+﻿const ENV = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT || 3000),
-  dbPath: process.env.DB_PATH || path.join(__dirname, '..', '..', 'data.sqlite')
+  databaseUrl: process.env.DATABASE_URL || '',
+  corsOrigins: process.env.CORS_ORIGINS || '*'
 };
 
 module.exports = ENV;

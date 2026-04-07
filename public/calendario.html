@@ -34,9 +34,59 @@
         <div id="calendarHost" class="calendar-host"></div>
         <div id="calendarGrid" class="calendar-grid"></div>
       </section>
+
+      <section class="card card-wide slot-editor-card" id="slotEditorCard">
+        <h2>Gestion de horario seleccionado</h2>
+        <div id="slotPanel" class="slot-panel">
+          <p class="slot-panel-empty">Carga el calendario para ver los horarios disponibles.</p>
+        </div>
+        <form id="slotEditorForm" class="slot-editor-form" novalidate>
+          <div class="schedule-row">
+            <div class="form-group">
+              <label for="slotDateTime">Horario seleccionado</label>
+              <input id="slotDateTime" type="text" readonly />
+            </div>
+            <div class="form-group">
+              <label for="slotStatus">Estado</label>
+              <select id="slotStatus" name="status">
+                <option value="available">Disponible</option>
+                <option value="booked">Reservado</option>
+                <option value="blocked">Bloqueado</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="slotClientFields">
+            <div class="schedule-row">
+              <div class="form-group">
+                <label for="slotClientName">Cliente</label>
+                <input id="slotClientName" name="clientName" type="text" placeholder="Nombre de quien visitara" />
+              </div>
+              <div class="form-group">
+                <label for="slotClientEmail">Email cliente</label>
+                <input id="slotClientEmail" name="clientEmail" type="email" placeholder="cliente@email.com" />
+              </div>
+              <div class="form-group">
+                <label for="slotUnitToVisit">Unidad a visitar</label>
+                <input id="slotUnitToVisit" name="unitToVisit" type="text" placeholder="Ej: Dpto 1203 Torre B" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="slotObservation">Observacion</label>
+            <textarea id="slotObservation" name="observation" rows="3" placeholder="Notas internas, motivo o comentarios"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="saveSlotBtn">Guardar estado del horario</button>
+          </div>
+          <p id="slotEditorStatus" class="status info">Selecciona un horario del calendario para editarlo.</p>
+        </form>
+      </section>
     </main>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
-  <script src="/app.js"></script>
+  <script src="/app.js?v=8"></script>
 </body>
 </html>

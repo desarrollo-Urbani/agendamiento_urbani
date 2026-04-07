@@ -1,58 +1,63 @@
 ﻿const service = require('../services/schedulingService');
 const validators = require('../validators/schedulingValidators');
 
-function getProjects() {
+async function getProjects() {
   return service.getProjects();
 }
 
-function createProject(body) {
+async function createProject(body) {
   const input = validators.validateCreateProjectBody(body);
   return service.createProject(input);
 }
 
-function updateProject(projectId, body) {
+async function updateProject(projectId, body) {
   const input = validators.validateUpdateProjectBody(body);
   return service.updateProject(projectId, input);
 }
 
-function getExecutives(query) {
+async function getExecutives(query) {
   const filters = validators.validateExecutiveFilters(query);
   return service.getExecutives(filters);
 }
 
-function getAvailability(query) {
+async function getAvailability(query) {
   const filters = validators.validateAvailabilityFilters(query);
   return service.getAvailability(filters);
 }
 
-function getVisits(query) {
+async function getVisits(query) {
   const filters = validators.validateCalendarFilters(query);
   return service.getVisits(filters);
 }
 
-function getBlocks(query) {
+async function getBlocks(query) {
   const filters = validators.validateCalendarFilters(query);
   return service.getBlocks(filters);
 }
 
-function getCalendar(query) {
+async function getCalendar(query) {
   const filters = validators.validateCalendarFilters(query);
   return service.getCalendar(filters);
 }
 
-function bookVisit(body) {
+async function bookVisit(body) {
   const input = validators.validateBookBody(body);
   return service.bookVisit(input);
 }
 
-function rescheduleVisit(body) {
+async function rescheduleVisit(body) {
   const input = validators.validateRescheduleBody(body);
   return service.rescheduleVisit(input);
 }
 
-function cancelVisit(body) {
+async function cancelVisit(body) {
   const input = validators.validateCancelBody(body);
   return service.cancelVisit(input);
+}
+
+async function setSlotStatus(body) {
+  const input = validators.validateSlotStatusBody(body);
+  return service.setSlotStatus(input);
 }
 
 module.exports = {
@@ -66,5 +71,6 @@ module.exports = {
   getCalendar,
   bookVisit,
   rescheduleVisit,
-  cancelVisit
+  cancelVisit,
+  setSlotStatus
 };

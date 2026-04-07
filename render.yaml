@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: urbani-scheduling-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false          # Set manually in Render dashboard
+      - key: CORS_ORIGINS
+        sync: false          # Set to your Vercel frontend URL, e.g. https://urbani.vercel.app

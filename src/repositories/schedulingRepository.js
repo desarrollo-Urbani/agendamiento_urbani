@@ -1,301 +1,374 @@
-﻿const db = require('../db/connection');
+﻿const pool = require('../db/connection');
 
-function inTransaction(work) {
-  db.exec('BEGIN');
+async function q(sql, params, client) {
+  return (client || pool).query(sql, params);
+}
+
+async function inTransaction(work) {
+  const client = await pool.connect();
   try {
-    const result = work();
-    db.exec('COMMIT');
+    await client.query('BEGIN');
+    const result = await work(client);
+    await client.query('COMMIT');
     return result;
   } catch (error) {
-    try {
-      db.exec('ROLLBACK');
-    } catch (_rollbackError) {
-      // Ignore rollback failure.
-    }
+    try { await client.query('ROLLBACK'); } catch (_) {}
     throw error;
+  } finally {
+    client.release();
   }
 }
 
-function listProjects() {
-  return db
-    .prepare(
-      `SELECT p.*, e.id AS manager_id, e.name AS manager_name, e.email AS manager_email
-       FROM projects p
-       LEFT JOIN executives e ON e.id = (
-         SELECT id FROM executives ex
-         WHERE ex.project_id = p.id
-         ORDER BY ex.id ASC
-         LIMIT 1
-       )
-       ORDER BY p.id ASC`
-    )
-    .all();
+async function listProjects() {
+  const { rows } = await q(
+    `SELECT p.*, e.id AS manager_id, e.name AS manager_name, e.email AS manager_email
+     FROM projects p
+     LEFT JOIN executives e ON e.id = (
+       SELECT id FROM executives ex
+       WHERE ex.project_id = p.id
+       ORDER BY ex.id ASC
+       LIMIT 1
+     )
+     ORDER BY p.id ASC`,
+    []
+  );
+  return rows;
 }
 
-function createProject(input) {
-  return db
-    .prepare(
-      `INSERT INTO projects (name, attention_hours)
-       VALUES (:name, :attentionHours)`
-    )
-    .run(input);
+async function listProjectScheduleRules(projectId, client) {
+  const { rows } = await q(
+    `SELECT * FROM project_schedule_rules WHERE project_id = $1 ORDER BY weekday ASC, start_time ASC`,
+    [projectId],
+    client
+  );
+  return rows;
 }
 
-function updateProject(input) {
-  return db
-    .prepare(
-      `UPDATE projects
-       SET name = :name,
-           attention_hours = :attentionHours
-       WHERE id = :projectId`
-    )
-    .run(input);
+async function listProjectDayBlocks(projectId, client) {
+  const { rows } = await q(
+    `SELECT * FROM project_day_blocks WHERE project_id = $1 ORDER BY block_date ASC, start_time ASC`,
+    [projectId],
+    client
+  );
+  return rows;
 }
 
-function listExecutives(filters) {
+async function replaceProjectScheduleRules(projectId, scheduleRules, client) {
+  await q('DELETE FROM project_schedule_rules WHERE project_id = $1', [projectId], client);
+  if (!scheduleRules || scheduleRules.length === 0) return;
+  for (const rule of scheduleRules) {
+    await q(
+      `INSERT INTO project_schedule_rules (project_id, weekday, start_time, end_time, slot_minutes)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [projectId, rule.weekday, rule.startTime, rule.endTime, rule.slotMinutes],
+      client
+    );
+  }
+}
+
+async function replaceProjectDayBlocks(projectId, dayBlocks, client) {
+  await q('DELETE FROM project_day_blocks WHERE project_id = $1', [projectId], client);
+  if (!dayBlocks || dayBlocks.length === 0) return;
+  for (const block of dayBlocks) {
+    await q(
+      `INSERT INTO project_day_blocks (project_id, block_date, start_time, end_time, is_full_day, reason)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [projectId, block.blockDate, block.startTime || null, block.endTime || null, block.isFullDay ? 1 : 0, block.reason || null],
+      client
+    );
+  }
+}
+
+async function createProject(input, client) {
+  const { rows } = await q(
+    `INSERT INTO projects (name, attention_hours) VALUES ($1, $2) RETURNING id`,
+    [input.name, input.attentionHours],
+    client
+  );
+  return rows[0];
+}
+
+async function updateProject(input, client) {
+  await q(
+    `UPDATE projects SET name = $1, attention_hours = $2 WHERE id = $3`,
+    [input.name, input.attentionHours, input.projectId],
+    client
+  );
+}
+
+async function listExecutives(filters) {
   const conditions = ['1 = 1'];
-  const params = {};
-
+  const params = [];
   if (filters.projectId) {
-    conditions.push('e.project_id = :projectId');
-    params.projectId = filters.projectId;
+    params.push(filters.projectId);
+    conditions.push(`e.project_id = $${params.length}`);
   }
-
-  return db
-    .prepare(
-      `SELECT e.*, p.name AS project_name
-       FROM executives e
-       JOIN projects p ON p.id = e.project_id
-       WHERE ${conditions.join(' AND ')}
-       ORDER BY e.name ASC`
-    )
-    .all(params);
+  const { rows } = await q(
+    `SELECT e.*, p.name AS project_name
+     FROM executives e
+     JOIN projects p ON p.id = e.project_id
+     WHERE ${conditions.join(' AND ')}
+     ORDER BY e.name ASC`,
+    params
+  );
+  return rows;
 }
 
-function listAvailability(filters) {
+async function listAvailability(filters) {
   const conditions = ['a.is_booked = 0'];
-  const params = {};
-
+  const params = [];
   if (filters.executiveId) {
-    conditions.push('a.executive_id = :executiveId');
-    params.executiveId = filters.executiveId;
+    params.push(filters.executiveId);
+    conditions.push(`a.executive_id = $${params.length}`);
   }
-
   if (filters.projectId) {
-    conditions.push('e.project_id = :projectId');
-    params.projectId = filters.projectId;
+    params.push(filters.projectId);
+    conditions.push(`e.project_id = $${params.length}`);
   }
-
-  return db
-    .prepare(
-      `SELECT a.*, e.project_id
-       FROM availability a
-       JOIN executives e ON e.id = a.executive_id
-       WHERE ${conditions.join(' AND ')}
-       ORDER BY a.slot_start ASC`
-    )
-    .all(params);
+  const { rows } = await q(
+    `SELECT a.*, e.project_id
+     FROM availability a
+     JOIN executives e ON e.id = a.executive_id
+     WHERE ${conditions.join(' AND ')}
+     ORDER BY a.slot_start ASC`,
+    params
+  );
+  return rows;
 }
 
-function listVisits(filters) {
+async function listVisits(filters) {
   const conditions = ['1 = 1'];
-  const params = {};
-
+  const params = [];
   if (filters.projectId) {
-    conditions.push('v.project_id = :projectId');
-    params.projectId = filters.projectId;
+    params.push(filters.projectId);
+    conditions.push(`v.project_id = $${params.length}`);
   }
   if (filters.from) {
-    conditions.push('v.starts_at >= :from');
-    params.from = filters.from;
+    params.push(filters.from);
+    conditions.push(`v.starts_at >= $${params.length}`);
   }
   if (filters.to) {
-    conditions.push('v.ends_at <= :to');
-    params.to = filters.to;
+    params.push(filters.to);
+    conditions.push(`v.ends_at <= $${params.length}`);
   }
-
-  return db
-    .prepare(
-      `SELECT v.*, e.name AS executive_name, p.name AS project_name
-       FROM visits v
-       JOIN executives e ON e.id = v.executive_id
-       JOIN projects p ON p.id = v.project_id
-       WHERE ${conditions.join(' AND ')}
-       ORDER BY v.starts_at ASC`
-    )
-    .all(params);
+  const { rows } = await q(
+    `SELECT v.*, e.name AS executive_name, p.name AS project_name
+     FROM visits v
+     JOIN executives e ON e.id = v.executive_id
+     JOIN projects p ON p.id = v.project_id
+     WHERE ${conditions.join(' AND ')}
+     ORDER BY v.starts_at ASC`,
+    params
+  );
+  return rows;
 }
 
-function listBlocks(filters) {
+async function listBlocks(filters) {
   const conditions = ['1 = 1'];
-  const params = {};
-
+  const params = [];
   if (filters.projectId) {
-    conditions.push('e.project_id = :projectId');
-    params.projectId = filters.projectId;
+    params.push(filters.projectId);
+    conditions.push(`e.project_id = $${params.length}`);
   }
   if (filters.from) {
-    conditions.push('b.block_start >= :from');
-    params.from = filters.from;
+    params.push(filters.from);
+    conditions.push(`b.block_start >= $${params.length}`);
   }
   if (filters.to) {
-    conditions.push('b.block_end <= :to');
-    params.to = filters.to;
+    params.push(filters.to);
+    conditions.push(`b.block_end <= $${params.length}`);
   }
-
-  return db
-    .prepare(
-      `SELECT b.*, e.project_id, e.name AS executive_name
-       FROM blocks b
-       JOIN executives e ON e.id = b.executive_id
-       WHERE ${conditions.join(' AND ')}
-       ORDER BY b.block_start ASC`
-    )
-    .all(params);
+  const { rows } = await q(
+    `SELECT b.*, e.project_id, e.name AS executive_name
+     FROM blocks b
+     JOIN executives e ON e.id = b.executive_id
+     WHERE ${conditions.join(' AND ')}
+     ORDER BY b.block_start ASC`,
+    params
+  );
+  return rows;
 }
 
-function listCalendar(filters) {
-  const availabilityConditions = ['1 = 1'];
-  const visitsConditions = ['1 = 1'];
-  const blocksConditions = ['1 = 1'];
-  const params = {};
+async function listCalendar(filters) {
+  function buildParams(projectCol, startCol, endCol) {
+    const conds = ['1 = 1'];
+    const vals = [];
+    if (filters.projectId) { vals.push(filters.projectId); conds.push(`${projectCol} = $${vals.length}`); }
+    if (filters.from)      { vals.push(filters.from);      conds.push(`${startCol} >= $${vals.length}`); }
+    if (filters.to)        { vals.push(filters.to);        conds.push(`${endCol} <= $${vals.length}`); }
+    return { where: conds.join(' AND '), vals };
+  }
+  const a = buildParams('e.project_id', 'a.slot_start', 'a.slot_end');
+  const v = buildParams('v.project_id', 'v.starts_at', 'v.ends_at');
+  const b = buildParams('e.project_id', 'b.block_start', 'b.block_end');
 
+  const [aRes, vRes, bRes] = await Promise.all([
+    q(`SELECT a.*, e.project_id, e.name AS executive_name FROM availability a JOIN executives e ON e.id = a.executive_id WHERE ${a.where} ORDER BY a.slot_start ASC`, a.vals),
+    q(`SELECT v.*, e.name AS executive_name FROM visits v JOIN executives e ON e.id = v.executive_id WHERE ${v.where} ORDER BY v.starts_at ASC`, v.vals),
+    q(`SELECT b.*, e.project_id, e.name AS executive_name FROM blocks b JOIN executives e ON e.id = b.executive_id WHERE ${b.where} ORDER BY b.block_start ASC`, b.vals)
+  ]);
+  return { availability: aRes.rows, visits: vRes.rows, blocks: bRes.rows };
+}
+
+async function listProjectDayBlocksInRange(filters) {
+  const conditions = ['1 = 1'];
+  const params = [];
   if (filters.projectId) {
-    availabilityConditions.push('e.project_id = :projectId');
-    visitsConditions.push('v.project_id = :projectId');
-    blocksConditions.push('e.project_id = :projectId');
-    params.projectId = filters.projectId;
+    params.push(filters.projectId);
+    conditions.push(`project_id = $${params.length}`);
   }
   if (filters.from) {
-    availabilityConditions.push('a.slot_start >= :from');
-    visitsConditions.push('v.starts_at >= :from');
-    blocksConditions.push('b.block_start >= :from');
-    params.from = filters.from;
+    params.push(filters.from.slice(0, 10));
+    conditions.push(`block_date >= $${params.length}`);
   }
   if (filters.to) {
-    availabilityConditions.push('a.slot_end <= :to');
-    visitsConditions.push('v.ends_at <= :to');
-    blocksConditions.push('b.block_end <= :to');
-    params.to = filters.to;
+    params.push(filters.to.slice(0, 10));
+    conditions.push(`block_date <= $${params.length}`);
   }
-
-  return {
-    availability: db
-      .prepare(
-        `SELECT a.*, e.project_id, e.name AS executive_name
-         FROM availability a
-         JOIN executives e ON e.id = a.executive_id
-         WHERE ${availabilityConditions.join(' AND ')}
-         ORDER BY a.slot_start ASC`
-      )
-      .all(params),
-    visits: db
-      .prepare(
-        `SELECT v.*, e.name AS executive_name
-         FROM visits v
-         JOIN executives e ON e.id = v.executive_id
-         WHERE ${visitsConditions.join(' AND ')}
-         ORDER BY v.starts_at ASC`
-      )
-      .all(params),
-    blocks: db
-      .prepare(
-        `SELECT b.*, e.project_id, e.name AS executive_name
-         FROM blocks b
-         JOIN executives e ON e.id = b.executive_id
-         WHERE ${blocksConditions.join(' AND ')}
-         ORDER BY b.block_start ASC`
-      )
-      .all(params)
-  };
+  const { rows } = await q(
+    `SELECT * FROM project_day_blocks WHERE ${conditions.join(' AND ')} ORDER BY block_date ASC, start_time ASC`,
+    params
+  );
+  return rows;
 }
 
-function findOpenAvailability(availabilityId, executiveId) {
-  return db
-    .prepare('SELECT * FROM availability WHERE id = :availabilityId AND executive_id = :executiveId AND is_booked = 0')
-    .get({ availabilityId, executiveId });
+async function findOpenAvailability(availabilityId, executiveId, client) {
+  const { rows } = await q(
+    'SELECT * FROM availability WHERE id = $1 AND executive_id = $2 AND is_booked = 0',
+    [availabilityId, executiveId],
+    client
+  );
+  return rows[0] || null;
 }
 
-function findBookedVisit(visitId) {
-  return db.prepare('SELECT * FROM visits WHERE id = :visitId AND status = :status').get({ visitId, status: 'booked' });
+async function findBookedVisit(visitId) {
+  const { rows } = await q(
+    `SELECT * FROM visits WHERE id = $1 AND status = 'booked'`,
+    [visitId]
+  );
+  return rows[0] || null;
 }
 
-function findProjectById(projectId) {
-  return db.prepare('SELECT * FROM projects WHERE id = :projectId').get({ projectId });
+async function findProjectById(projectId) {
+  const { rows } = await q('SELECT * FROM projects WHERE id = $1', [projectId]);
+  return rows[0] || null;
 }
 
-function findExecutiveById(executiveId) {
-  return db.prepare('SELECT * FROM executives WHERE id = :executiveId').get({ executiveId });
+async function findExecutiveById(executiveId) {
+  const { rows } = await q('SELECT * FROM executives WHERE id = $1', [executiveId]);
+  return rows[0] || null;
 }
 
-function findPrimaryExecutiveByProjectId(projectId) {
-  return db
-    .prepare(
-      `SELECT *
-       FROM executives
-       WHERE project_id = :projectId
-       ORDER BY id ASC
-       LIMIT 1`
-    )
-    .get({ projectId });
+async function findPrimaryExecutiveByProjectId(projectId, client) {
+  const { rows } = await q(
+    `SELECT * FROM executives WHERE project_id = $1 ORDER BY id ASC LIMIT 1`,
+    [projectId],
+    client
+  );
+  return rows[0] || null;
 }
 
-function createExecutive(input) {
-  return db
-    .prepare(
-      `INSERT INTO executives (project_id, name, email)
-       VALUES (:projectId, :name, :email)`
-    )
-    .run(input);
+async function createExecutive(input, client) {
+  const { rows } = await q(
+    `INSERT INTO executives (project_id, name, email) VALUES ($1, $2, $3) RETURNING id`,
+    [input.projectId, input.name, input.email],
+    client
+  );
+  return rows[0];
 }
 
-function updateExecutive(input) {
-  return db
-    .prepare(
-      `UPDATE executives
-       SET name = :name,
-           email = :email
-       WHERE id = :executiveId`
-    )
-    .run(input);
+async function updateExecutive(input, client) {
+  await q(
+    `UPDATE executives SET name = $1, email = $2 WHERE id = $3`,
+    [input.name, input.email, input.executiveId],
+    client
+  );
 }
 
-function createVisit(input) {
-  return db
-    .prepare(
-      `INSERT INTO visits (project_id, executive_id, availability_id, client_name, client_email, starts_at, ends_at)
-       VALUES (:projectId, :executiveId, :availabilityId, :clientName, :clientEmail, :startsAt, :endsAt)`
-    )
-    .run(input);
+async function createVisit(input, client) {
+  const { rows } = await q(
+    `INSERT INTO visits (project_id, executive_id, availability_id, client_name, client_email, unit_to_visit, observation, starts_at, ends_at, status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+    [input.projectId, input.executiveId, input.availabilityId, input.clientName, input.clientEmail, input.unitToVisit, input.observation, input.startsAt, input.endsAt, input.status],
+    client
+  );
+  return rows[0];
 }
 
-function markAvailabilityBooked(availabilityId) {
-  return db.prepare('UPDATE availability SET is_booked = 1 WHERE id = :availabilityId').run({ availabilityId });
+async function createBlock(input, client) {
+  const { rows } = await q(
+    `INSERT INTO blocks (executive_id, reason, block_start, block_end) VALUES ($1, $2, $3, $4) RETURNING id`,
+    [input.executiveId, input.reason, input.blockStart, input.blockEnd],
+    client
+  );
+  return rows[0];
 }
 
-function markAvailabilityFree(availabilityId) {
-  return db.prepare('UPDATE availability SET is_booked = 0 WHERE id = :availabilityId').run({ availabilityId });
+async function findActiveVisitBySlot(input) {
+  const { rows } = await q(
+    `SELECT * FROM visits
+     WHERE project_id = $1 AND executive_id = $2 AND starts_at = $3 AND ends_at = $4 AND status = 'booked'
+     ORDER BY id DESC LIMIT 1`,
+    [input.projectId, input.executiveId, input.startsAt, input.endsAt]
+  );
+  return rows[0] || null;
 }
 
-function updateVisitSchedule(input) {
-  return db
-    .prepare(
-      `UPDATE visits
-       SET availability_id = :availabilityId, starts_at = :startsAt, ends_at = :endsAt, updated_at = datetime('now')
-       WHERE id = :visitId`
-    )
-    .run(input);
+async function findBlockBySlot(input) {
+  const { rows } = await q(
+    `SELECT * FROM blocks
+     WHERE executive_id = $1 AND block_start = $2 AND block_end = $3
+     ORDER BY id DESC LIMIT 1`,
+    [input.executiveId, input.blockStart, input.blockEnd]
+  );
+  return rows[0] || null;
 }
 
-function cancelVisit(visitId) {
-  return db
-    .prepare("UPDATE visits SET status = 'cancelled', updated_at = datetime('now') WHERE id = :visitId")
-    .run({ visitId });
+async function updateVisitDetails(input, client) {
+  await q(
+    `UPDATE visits
+     SET client_name = $1, client_email = $2, unit_to_visit = $3, observation = $4, status = $5, updated_at = NOW()
+     WHERE id = $6`,
+    [input.clientName, input.clientEmail, input.unitToVisit, input.observation, input.status, input.visitId],
+    client
+  );
+}
+
+async function markAvailabilityBooked(availabilityId, client) {
+  await q('UPDATE availability SET is_booked = 1 WHERE id = $1', [availabilityId], client);
+}
+
+async function markAvailabilityFree(availabilityId, client) {
+  await q('UPDATE availability SET is_booked = 0 WHERE id = $1', [availabilityId], client);
+}
+
+async function updateVisitSchedule(input, client) {
+  await q(
+    `UPDATE visits SET availability_id = $1, starts_at = $2, ends_at = $3, updated_at = NOW() WHERE id = $4`,
+    [input.availabilityId, input.startsAt, input.endsAt, input.visitId],
+    client
+  );
+}
+
+async function cancelVisit(visitId, client) {
+  await q(
+    `UPDATE visits SET status = 'cancelled', updated_at = NOW() WHERE id = $1`,
+    [visitId],
+    client
+  );
+}
+
+async function deleteBlock(blockId, client) {
+  await q('DELETE FROM blocks WHERE id = $1', [blockId], client);
 }
 
 module.exports = {
   inTransaction,
   listProjects,
+  listProjectScheduleRules,
+  listProjectDayBlocks,
+  replaceProjectScheduleRules,
+  replaceProjectDayBlocks,
   createProject,
   updateProject,
   listExecutives,
@@ -303,6 +376,7 @@ module.exports = {
   listVisits,
   listBlocks,
   listCalendar,
+  listProjectDayBlocksInRange,
   findOpenAvailability,
   findBookedVisit,
   findProjectById,
@@ -311,8 +385,13 @@ module.exports = {
   createExecutive,
   updateExecutive,
   createVisit,
+  createBlock,
+  findActiveVisitBySlot,
+  findBlockBySlot,
+  updateVisitDetails,
   markAvailabilityBooked,
   markAvailabilityFree,
   updateVisitSchedule,
-  cancelVisit
+  cancelVisit,
+  deleteBlock
 };

@@ -1,13 +1,22 @@
 ﻿const path = require('path');
 const fs = require('fs');
-const { DatabaseSync } = require('node:sqlite');
+const pool = require('./connection');
 
-const dbPath = path.join(__dirname, '..', '..', 'data.sqlite');
 const schemaPath = path.join(__dirname, 'schema.sql');
 const schemaSql = fs.readFileSync(schemaPath, 'utf8');
 
-const db = new DatabaseSync(dbPath);
-db.exec(schemaSql);
-db.close();
+async function initDb() {
+  const client = await pool.connect();
+  try {
+    await client.query(schemaSql);
+    console.log('Database initialized successfully.');
+  } finally {
+    client.release();
+    await pool.end();
+  }
+}
 
-console.log(`Database initialized at ${dbPath}`);
+initDb().catch((error) => {
+  console.error('Init failed:', error.message);
+  process.exitCode = 1;
+});

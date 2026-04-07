@@ -8,20 +8,17 @@ const { sendJson } = require('./shared/http');
 const { asAppError } = require('./shared/errors');
 const logger = require('./shared/logger');
 
-const dbFile = ENV.dbPath;
 const frontendDistDir = path.join(__dirname, '..', 'frontend', 'dist');
 const frontendIndex = path.join(frontendDistDir, 'index.html');
 const legacyPublicDir = path.join(__dirname, '..', 'public');
 
-if (!fs.existsSync(dbFile)) {
-  logger.info('Database file not found. Run npm run db:init before starting.', { dbFile });
-}
-
 function sendStatic(response, contentType, filePath, isBinary = false) {
   const content = isBinary ? fs.readFileSync(filePath) : fs.readFileSync(filePath, 'utf8');
+  const isProduction = ENV.nodeEnv === 'production';
+  const cacheControl = isProduction ? 'public, max-age=3600' : 'no-store, no-cache, must-revalidate';
   response.writeHead(200, {
     'Content-Type': contentType,
-    'Cache-Control': contentType.includes('text/html') ? 'no-store, no-cache, must-revalidate, proxy-revalidate' : 'public, max-age=3600'
+    'Cache-Control': cacheControl
   });
   response.end(content);
 }
@@ -31,6 +28,25 @@ const server = http.createServer(async (request, response) => {
 
   try {
     const url = new URL(request.url, `http://${request.headers.host}`);
+
+    // CORS
+    const origin = request.headers.origin;
+    const allowedOrigins = ENV.corsOrigins === '*'
+      ? null
+      : (ENV.corsOrigins || '').split(',').map((s) => s.trim()).filter(Boolean);
+    const originAllowed = !origin || !allowedOrigins || allowedOrigins.includes(origin);
+    if (origin && originAllowed) {
+      response.setHeader('Access-Control-Allow-Origin', origin);
+      response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      response.setHeader('Vary', 'Origin');
+    }
+    if (request.method === 'OPTIONS') {
+      response.writeHead(204);
+      response.end();
+      return;
+    }
+
     const frontendRoutes = new Set(['/', '/catalogo', '/calendario']);
 
     if (request.method === 'GET' && (url.pathname === '/confirmacion' || url.pathname === '/formulario')) {
@@ -120,6 +136,28 @@ const server = http.createServer(async (request, response) => {
   }
 });
 
-server.listen(ENV.port, () => {
-  logger.info('API running', { url: `http://localhost:${ENV.port}`, env: ENV.nodeEnv });
-});
+function listenWithFallback(basePort, maxAttempts = 10) {
+  let attempt = 0;
+
+  const tryListen = () => {
+    const port = basePort + attempt;
+    server.listen(port, () => {
+      logger.info('API running', { url: `http://localhost:${port}`, env: ENV.nodeEnv });
+    });
+  };
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE' && attempt < maxAttempts) {
+      attempt += 1;
+      logger.info('Port busy, trying next port', { triedPort: basePort + attempt - 1, nextPort: basePort + attempt });
+      tryListen();
+      return;
+    }
+
+    throw error;
+  });
+
+  tryListen();
+}
+
+listenWithFallback(ENV.port);

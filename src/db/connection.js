@@ -1,7 +1,9 @@
-﻿const { DatabaseSync } = require('node:sqlite');
+﻿const { Pool } = require('pg');
 const ENV = require('../config/env');
 
-const db = new DatabaseSync(ENV.dbPath);
-db.exec('PRAGMA foreign_keys = ON;');
+const pool = new Pool({
+  connectionString: ENV.databaseUrl,
+  ssl: ENV.nodeEnv === 'production' ? { rejectUnauthorized: false } : false
+});
 
-module.exports = db;
+module.exports = pool;

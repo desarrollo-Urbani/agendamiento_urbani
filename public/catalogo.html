@@ -18,12 +18,71 @@
     </aside>
     <main class="grid">
       <section class="card">
+        <h2>Nuevo proyecto</h2>
+        <form id="newProjectForm" class="project-form" novalidate>
+          <div class="form-group">
+            <label for="newProjectName">Nombre del proyecto *</label>
+            <input id="newProjectName" name="name" type="text" placeholder="Ej: Torre Urbani Centro" required />
+          </div>
+          <div class="form-group">
+            <label for="newProjectHours">Horario de atención *</label>
+            <input id="newProjectHours" name="attentionHours" type="text" placeholder="Se genera automáticamente" readonly required />
+          </div>
+          <div class="form-group">
+            <label>Días de atención *</label>
+            <div class="days-grid" id="scheduleDaysGroup">
+              <label><input type="checkbox" name="scheduleDays" value="1" checked /> Lun</label>
+              <label><input type="checkbox" name="scheduleDays" value="2" checked /> Mar</label>
+              <label><input type="checkbox" name="scheduleDays" value="3" checked /> Mié</label>
+              <label><input type="checkbox" name="scheduleDays" value="4" checked /> Jue</label>
+              <label><input type="checkbox" name="scheduleDays" value="5" checked /> Vie</label>
+              <label><input type="checkbox" name="scheduleDays" value="6" checked /> Sáb</label>
+              <label><input type="checkbox" name="scheduleDays" value="0" /> Dom</label>
+            </div>
+          </div>
+          <div class="schedule-row">
+            <div class="form-group">
+              <label for="scheduleStart">Desde *</label>
+              <input id="scheduleStart" name="scheduleStart" type="time" value="09:00" required />
+            </div>
+            <div class="form-group">
+              <label for="scheduleEnd">Hasta *</label>
+              <input id="scheduleEnd" name="scheduleEnd" type="time" value="20:00" required />
+            </div>
+            <div class="form-group">
+              <label for="slotMinutes">Duración slot (min) *</label>
+              <select id="slotMinutes" name="slotMinutes" required>
+                <option value="30">30</option>
+                <option value="45">45</option>
+                <option value="60" selected>60</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="blockedDates">Días bloqueados (sin visita)</label>
+            <textarea id="blockedDates" name="blockedDates" rows="3" placeholder="Ej: 2026-04-10, 2026-04-11"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="newProjectExecutive">Encargado *</label>
+            <input id="newProjectExecutive" name="executiveName" type="text" placeholder="Nombre del encargado" required />
+          </div>
+          <div class="form-group">
+            <label for="newProjectEmail">Email del encargado</label>
+            <input id="newProjectEmail" name="executiveEmail" type="email" placeholder="encargado@urbani.cl" />
+          </div>
+          <div class="form-actions">
+            <button type="submit" id="submitNewProject">Agregar proyecto</button>
+          </div>
+          <p id="newProjectStatus" class="status"></p>
+        </form>
+      </section>
+      <section class="card card-wide">
         <h2>Catálogo</h2>
         <button id="loadProjects">Cargar proyectos</button>
-        <ul id="projectsList"></ul>
+        <ul id="projectsList" class="projects-list"></ul>
       </section>
     </main>
   </div>
-  <script src="/app.js"></script>
+  <script src="/app.js?v=4"></script>
 </body>
 </html>

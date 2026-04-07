@@ -12,6 +12,9 @@
     "frontend:dev": "npm --prefix frontend run dev",
     "frontend:build": "npm --prefix frontend run build"
   },
+  "dependencies": {
+    "pg": "^8.13.3"
+  },
   "devDependencies": {
     "concurrently": "^9.1.2"
   },
