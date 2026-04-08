@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -48,7 +48,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ======================================================
-   FullCalendar overrides — "The Digital Architect" skin
+   FullCalendar overrides � "The Digital Architect" skin
 ====================================================== */
 .fc {
   font-family: 'Inter', sans-serif;
@@ -59,6 +59,12 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 1rem;
   font-weight: 800;
   color: #002147;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 0.75rem;
 }
 
 .fc .fc-button {
@@ -133,6 +139,31 @@ h1, h2, h3, h4, h5, h6 {
 
 .fc td, .fc th {
   border-color: rgba(196, 198, 207, 0.3) !important;
+}
+
+@media (max-width: 1023px) {
+  .fc .fc-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .fc .fc-toolbar-chunk {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .fc .fc-button {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem !important;
+  }
 }
 
 /* ======================================================

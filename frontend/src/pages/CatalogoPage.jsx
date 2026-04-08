@@ -102,7 +102,7 @@ export default function CatalogoPage() {
   return (
     <div>
       {/* Page Header */}
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8">
         <div>
           <h2 className="text-3xl font-headline font-extrabold text-primary-container tracking-tight">Inventario de Proyectos</h2>
           <p className="text-on-surface-variant text-sm mt-1 font-body">Administracion y supervision de proyectos inmobiliarios.</p>
@@ -118,7 +118,7 @@ export default function CatalogoPage() {
       </div>
 
       {/* Metric bento */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <div className="bg-surface-container-lowest p-5 rounded-xl flex flex-col gap-1">
           <span className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">Proyectos Activos</span>
           <span className="text-2xl font-headline font-bold text-on-surface">{projects.length}</span>
@@ -228,7 +228,8 @@ export default function CatalogoPage() {
             Actualizar
           </button>
         </div>
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] text-left">
           <thead>
             <tr className="bg-surface-container-low/60">
               <th className="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-on-surface-variant">Proyecto</th>
@@ -238,7 +239,7 @@ export default function CatalogoPage() {
               <th className="px-6 py-4 text-[10px] font-label uppercase tracking-widest text-on-surface-variant text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody>
+            <tbody>
             {projects.map((project, i) => (
               <tr
                 key={project.id}
@@ -285,8 +286,9 @@ export default function CatalogoPage() {
                 </td>
               </tr>
             )}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

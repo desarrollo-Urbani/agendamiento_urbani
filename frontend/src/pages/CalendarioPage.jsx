@@ -137,6 +137,13 @@ export default function CalendarioPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isNarrow, setIsNarrow] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 1024 : false));
+
+  useEffect(() => {
+    const onResize = () => setIsNarrow(window.innerWidth < 1024);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const loadProjects = async () => {
     setProjects(await api('/api/projects'));
@@ -290,7 +297,7 @@ export default function CalendarioPage() {
   return (
     <div>
       {/* Page Header */}
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6 md:mb-8">
         <div>
           <h2 className="text-3xl font-headline font-extrabold text-primary-container tracking-tight">Calendario Maestro</h2>
           <p className="text-on-surface-variant text-sm mt-1 font-body">Disponibilidad y gestion de visitas por proyecto.</p>
@@ -321,9 +328,9 @@ export default function CalendarioPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         {/* Filters sidebar */}
-        <aside className="col-span-3 space-y-4">
+        <aside className="xl:col-span-4 2xl:col-span-3 space-y-4">
           <div className="bg-surface-container-lowest p-5 rounded-xl shadow-surface space-y-4">
             <h3 className="font-headline font-bold text-sm text-primary-container">Filtros</h3>
             <div>
@@ -398,20 +405,22 @@ export default function CalendarioPage() {
         </aside>
 
         {/* Calendar main */}
-        <div className="col-span-9 bg-surface-container-lowest rounded-xl shadow-surface overflow-hidden">
+        <div className="xl:col-span-8 2xl:col-span-9 bg-surface-container-lowest rounded-xl shadow-surface overflow-hidden">
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="timeGridWeek"
+            initialView={isNarrow ? 'timeGridDay' : 'timeGridWeek'}
             locale="es"
             headerToolbar={{
               left: 'prev,next today',
               center: 'title',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay'
+              right: isNarrow ? 'timeGridDay,timeGridWeek' : 'dayGridMonth,timeGridWeek,timeGridDay'
             }}
             buttonText={{ today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Dia' }}
             allDaySlot={false}
             events={calendarEvents}
             eventClick={onSelectEvent}
+            expandRows
+            stickyHeaderDates
             height="auto"
           />
         </div>
