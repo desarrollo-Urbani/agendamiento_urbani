@@ -1,17 +1,24 @@
 import { NavLink } from 'react-router-dom';
 
 const items = [
+  { to: '/dashboard', label: 'Panel', icon: 'dashboard' },
   { to: '/catalogo', label: 'Inventario', icon: 'real_estate_agent' },
   { to: '/calendario', label: 'Calendario', icon: 'calendar_month' },
+  { to: '/citas', label: 'Citas', icon: 'leaderboard' },
+  { to: '/cambiar-contrasena', label: 'Contrasena', icon: 'lock' },
 ];
 
-export default function Sidebar({ isOpen = false, onClose = () => {} }) {
+export default function Sidebar({ isOpen = false, onClose = () => {}, user = null }) {
+  const navItems = user?.role === 'admin'
+    ? [...items, { to: '/administradores', label: 'Administradores', icon: 'admin_panel_settings' }]
+    : items;
+
   return (
     <aside
       className={`fixed left-0 top-0 h-screen w-64 flex flex-col p-4 z-50 shadow-2xl overflow-hidden transition-transform duration-300 ${
         isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}
-      style={{ background: '#002147' }}
+      style={{ background: 'linear-gradient(180deg, #002147 0%, #001631 100%)' }}
     >
       <div className="flex items-center justify-between md:justify-start mb-8 px-2">
         <div className="flex items-center gap-3">
@@ -34,14 +41,14 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
       </div>
 
       <nav className="flex-1 space-y-1">
-        {items.map((item) => (
+        {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
                 isActive
-                  ? 'bg-[#0054cd] text-white'
+                  ? 'bg-[#0054cd] text-white shadow-sm'
                   : 'text-slate-300 hover:text-white hover:bg-[#0054cd]/20 hover:translate-x-0.5'
               }`
             }

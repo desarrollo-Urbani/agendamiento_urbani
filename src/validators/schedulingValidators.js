@@ -260,6 +260,29 @@ function validateSlotStatusBody(body) {
   };
 }
 
+function validateProjectStatusBody(body) {
+  const status = body && body.status ? String(body.status).trim().toLowerCase() : '';
+  const allowed = new Set(['active', 'paused', 'archived', 'deleted']);
+  if (!allowed.has(status)) {
+    throw new AppError('status must be one of: active, paused, archived, deleted', 400, 'VALIDATION_ERROR');
+  }
+  return { status };
+}
+
+function validateAuditFilters(query) {
+  return {
+    userId: toOptionalPositiveInt(query.userId, 'userId'),
+    action: query.action ? String(query.action).trim() : undefined,
+    module: query.module ? String(query.module).trim() : undefined,
+    from: toOptionalIsoDateTime(query.from, 'from'),
+    to: toOptionalIsoDateTime(query.to, 'to'),
+    limit: toOptionalPositiveInt(query.limit, 'limit'),
+    offset: query.offset !== undefined && query.offset !== null && query.offset !== ''
+      ? Number(query.offset)
+      : 0
+  };
+}
+
 module.exports = {
   validateCalendarFilters,
   validateAvailabilityFilters,
@@ -269,5 +292,7 @@ module.exports = {
   validateBookBody,
   validateRescheduleBody,
   validateCancelBody,
-  validateSlotStatusBody
+  validateSlotStatusBody,
+  validateProjectStatusBody,
+  validateAuditFilters
 };

@@ -1,21 +1,11 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ======================================================
-   Google Fonts: Manrope (headline) + Inter (body)
-   Material Symbols Outlined (icons)
-====================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
-@import '@fullcalendar/daygrid/index.css';
-@import '@fullcalendar/timegrid/index.css';
-
-/* ======================================================
-   Material Symbols base rule
-====================================================== */
 .material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   display: inline-block;
   vertical-align: middle;
@@ -23,9 +13,6 @@
   font-size: 20px;
 }
 
-/* ======================================================
-   Base
-====================================================== */
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
@@ -39,17 +26,11 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Manrope', sans-serif;
 }
 
-/* ======================================================
-   Layout Shell
-====================================================== */
 .app-shell {
   min-height: 100vh;
   display: flex;
 }
 
-/* ======================================================
-   FullCalendar overrides — "The Digital Architect" skin
-====================================================== */
 .fc {
   font-family: 'Inter', sans-serif;
 }
@@ -166,9 +147,9 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* ======================================================
-   Scrollbar
-====================================================== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d5e3fc; border-radius: 10px; }
+
+
+

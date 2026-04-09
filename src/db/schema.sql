@@ -1,4 +1,8 @@
-﻿DROP TABLE IF EXISTS blocks CASCADE;
+﻿DROP TABLE IF EXISTS audit_logs CASCADE;
+DROP TABLE IF EXISTS password_reset_tokens CASCADE;
+DROP TABLE IF EXISTS user_sessions CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS blocks CASCADE;
 DROP TABLE IF EXISTS visits CASCADE;
 DROP TABLE IF EXISTS availability CASCADE;
 DROP TABLE IF EXISTS executives CASCADE;
@@ -13,7 +17,10 @@ CREATE TABLE projects (
   delivery_date TEXT,
   sales_office_address TEXT,
   attention_hours TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
 );
 
 CREATE TABLE executives (
@@ -21,6 +28,57 @@ CREATE TABLE executives (
   project_id INTEGER NOT NULL REFERENCES projects(id),
   name TEXT NOT NULL,
   email TEXT UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  display_name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'executive',
+  password_hash TEXT NOT NULL,
+  executive_id INTEGER REFERENCES executives(id),
+  is_active INTEGER NOT NULL DEFAULT 1,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE user_sessions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  session_token TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  revoked_at TIMESTAMPTZ,
+  ip_address TEXT,
+  user_agent TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE password_reset_tokens (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  reset_token TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used_at TIMESTAMPTZ,
+  ip_address TEXT,
+  user_agent TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE audit_logs (
+  id SERIAL PRIMARY KEY,
+  project_id INTEGER REFERENCES projects(id),
+  user_id INTEGER REFERENCES users(id),
+  action TEXT NOT NULL,
+  module TEXT,
+  entity_type TEXT,
+  entity_id TEXT,
+  description TEXT,
+  old_values TEXT,
+  new_values TEXT,
+  status TEXT NOT NULL DEFAULT 'success',
+  ip_address TEXT,
+  user_agent TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -79,12 +137,6 @@ CREATE TABLE blocks (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS blocks (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  executive_id INTEGER NOT NULL,
-  reason TEXT,
-  block_start TEXT NOT NULL,
-  block_end TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (executive_id) REFERENCES executives(id)
-);
+CREATE INDEX idx_audit_logs_project_created_at ON audit_logs(project_id, created_at DESC);
+CREATE INDEX idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX idx_sessions_token ON user_sessions(session_token);

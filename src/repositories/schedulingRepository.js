@@ -29,6 +29,7 @@ async function listProjects() {
        ORDER BY ex.id ASC
        LIMIT 1
      )
+     WHERE p.deleted_at IS NULL
      ORDER BY p.id ASC`,
     []
   );
@@ -90,8 +91,24 @@ async function createProject(input, client) {
 
 async function updateProject(input, client) {
   await q(
-    `UPDATE projects SET name = $1, attention_hours = $2 WHERE id = $3`,
+    `UPDATE projects SET name = $1, attention_hours = $2, updated_at = NOW() WHERE id = $3`,
     [input.name, input.attentionHours, input.projectId],
+    client
+  );
+}
+
+async function updateProjectStatus(projectId, status, client) {
+  await q(
+    `UPDATE projects SET status = $1, updated_at = NOW() WHERE id = $2`,
+    [status, projectId],
+    client
+  );
+}
+
+async function softDeleteProject(projectId, client) {
+  await q(
+    `UPDATE projects SET deleted_at = NOW(), status = 'deleted', updated_at = NOW() WHERE id = $1`,
+    [projectId],
     client
   );
 }
@@ -371,6 +388,8 @@ module.exports = {
   replaceProjectDayBlocks,
   createProject,
   updateProject,
+  updateProjectStatus,
+  softDeleteProject,
   listExecutives,
   listAvailability,
   listVisits,

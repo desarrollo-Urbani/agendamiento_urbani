@@ -1,46 +1,43 @@
 ﻿# Urbani Smart Scheduling
 
-## Backend
+## Configuracion de persistencia (PostgreSQL Supabase)
+El backend ahora carga `.env` automaticamente.
+
+Contenido sugerido de `.env`:
+
+```env
+NODE_ENV=development
+PORT=3000
+CORS_ORIGINS=*
+DATABASE_URL=postgresql://postgres.juonpjkzbbyauwiwfeql:yz6jduf3cYo1w8IP@aws-1-us-east-2.pooler.supabase.com:6543/postgres
+```
+
+## Levantar proyecto (1 comando)
+```bash
+npm run dev
+```
+
+Esto levanta:
+- Backend: `http://localhost:3000`
+- Frontend: `http://localhost:5173`
+
+## Inicializar base de datos
 ```bash
 npm run db:init
-npm run db:seed
-npm start
 ```
-Backend/API: `http://localhost:3000`
 
-## Frontend React (Premium)
-```bash
-npm run frontend:install
-npm run frontend:dev
-```
-Frontend dev: `http://localhost:5173`
+## Cargar datos demo
+Actualmente cargados:
+- 3 proyectos
+- 10 reservas
 
-## Build frontend para produccion
+## Rutas principales UI
+- `/dashboard`
+- `/catalogo`
+- `/calendario`
+- `/citas`
+
+## Build frontend
 ```bash
 npm run frontend:build
-npm start
 ```
-El backend sirve `frontend/dist` en rutas:
-- /catalogo
-- /calendario
-- /formulario
-- /confirmacion
-
-## API
-- GET /api/projects
-- GET /api/availability
-- GET /api/visits
-- GET /api/blocks
-- GET /api/calendar
-- POST /api/book
-- PUT /api/reschedule
-- DELETE /api/cancel
-
-## Arquitectura Backend
-- `src/routes`
-- `src/controllers`
-- `src/services`
-- `src/repositories`
-- `src/validators`
-- `src/shared`
-- `src/config`

@@ -2,7 +2,8 @@
 
 export async function api(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options
   });
 
@@ -17,7 +18,10 @@ export async function api(path, options = {}) {
   }
 
   if (!res.ok) {
-    throw new Error(body.error || body.message || 'API error');
+    const err = new Error(body.error || body.message || 'API error');
+    err.status = res.status;
+    err.code = body.code;
+    throw err;
   }
 
   return body;

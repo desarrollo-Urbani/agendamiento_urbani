@@ -415,8 +415,11 @@ export default function CalendarioPage() {
               center: 'title',
               right: isNarrow ? 'timeGridDay,timeGridWeek' : 'dayGridMonth,timeGridWeek,timeGridDay'
             }}
-            buttonText={{ today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Dia' }}
+            buttonText={{ today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' }}
             allDaySlot={false}
+            slotMinTime="10:00:00"
+            slotMaxTime="19:00:00"
+            scrollTime="10:00:00"
             events={calendarEvents}
             eventClick={onSelectEvent}
             expandRows

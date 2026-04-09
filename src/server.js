@@ -7,6 +7,7 @@ const { handleApi } = require('./routes/apiRouter');
 const { sendJson } = require('./shared/http');
 const { asAppError } = require('./shared/errors');
 const logger = require('./shared/logger');
+const authService = require('./services/authService');
 
 const frontendDistDir = path.join(__dirname, '..', 'frontend', 'dist');
 const frontendIndex = path.join(frontendDistDir, 'index.html');
@@ -39,6 +40,7 @@ const server = http.createServer(async (request, response) => {
       response.setHeader('Access-Control-Allow-Origin', origin);
       response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      response.setHeader('Access-Control-Allow-Credentials', 'true');
       response.setHeader('Vary', 'Origin');
     }
     if (request.method === 'OPTIONS') {
@@ -47,7 +49,7 @@ const server = http.createServer(async (request, response) => {
       return;
     }
 
-    const frontendRoutes = new Set(['/', '/catalogo', '/calendario']);
+    const frontendRoutes = new Set(['/', '/login', '/dashboard', '/catalogo', '/calendario', '/citas', '/cambiar-contrasena', '/administradores']);
 
     if (request.method === 'GET' && (url.pathname === '/confirmacion' || url.pathname === '/formulario')) {
       response.writeHead(302, { Location: '/calendario' });
@@ -78,15 +80,17 @@ const server = http.createServer(async (request, response) => {
         }
       }
 
-      if (frontendRoutes.has(url.pathname) && fs.existsSync(frontendIndex)) {
+      if ((frontendRoutes.has(url.pathname) || /^\/proyectos\/\d+\/historial$/.test(url.pathname)) && fs.existsSync(frontendIndex)) {
         return sendStatic(response, 'text/html; charset=utf-8', frontendIndex);
       }
     }
 
     const legacyPageMap = {
       '/': 'catalogo.html',
+      '/dashboard': 'catalogo.html',
       '/catalogo': 'catalogo.html',
-      '/calendario': 'calendario.html'
+      '/calendario': 'calendario.html',
+      '/citas': 'calendario.html'
     };
 
     if (request.method === 'GET' && legacyPageMap[url.pathname]) {
@@ -161,3 +165,7 @@ function listenWithFallback(basePort, maxAttempts = 10) {
 }
 
 listenWithFallback(ENV.port);
+
+authService.ensureDefaultAdmin()
+  .then(() => logger.info('Default admin ensured', { email: 'desarollo@urbani.cl' }))
+  .catch((error) => logger.error('Failed to ensure default admin', { message: error.message }));

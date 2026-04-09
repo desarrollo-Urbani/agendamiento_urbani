@@ -1,4 +1,5 @@
 ﻿const repo = require('../repositories/schedulingRepository');
+const authRepo = require('../repositories/authRepository');
 const { AppError } = require('../shared/errors');
 
 function isoDate(date) {
@@ -42,12 +43,8 @@ function buildDynamicAvailability({ projectId, executive, scheduleRules, dayBloc
   });
 
   const occupiedIntervals = [];
-  visits.forEach((visit) => {
-    occupiedIntervals.push({ start: visit.starts_at, end: visit.ends_at });
-  });
-  blocks.forEach((block) => {
-    occupiedIntervals.push({ start: block.block_start, end: block.block_end });
-  });
+  visits.forEach((visit) => occupiedIntervals.push({ start: visit.starts_at, end: visit.ends_at }));
+  blocks.forEach((block) => occupiedIntervals.push({ start: block.block_start, end: block.block_end }));
 
   const hasCollision = (slotStartIso, slotEndIso, blockList) => {
     if (blockList && blockList.length > 0) {
@@ -63,10 +60,7 @@ function buildDynamicAvailability({ projectId, executive, scheduleRules, dayBloc
         const bEnd = parseMinutes(blockEndIso.slice(11, 16));
         return slotStart < bEnd && slotEnd > bStart;
       });
-
-      if (blocked) {
-        return true;
-      }
+      if (blocked) return true;
     }
 
     return occupiedIntervals.some((interval) => slotStartIso < interval.end && slotEndIso > interval.start);
@@ -132,7 +126,11 @@ async function createProject(input) {
     const projectRow = await repo.createProject({ name: input.name, attentionHours: input.attentionHours }, client);
     const projectId = projectRow.id;
 
-    await repo.createExecutive({ projectId, name: input.executiveName, email: input.executiveEmail }, client);
+    const executive = await repo.createExecutive({ projectId, name: input.executiveName, email: input.executiveEmail }, client);
+    if (input.executiveEmail) {
+      await authRepo.createUserIfMissing({ executiveId: executive.id, email: input.executiveEmail, displayName: input.executiveName }, client);
+    }
+
     await repo.replaceProjectScheduleRules(projectId, input.scheduleRules, client);
     await repo.replaceProjectDayBlocks(projectId, input.dayBlocks, client);
 
@@ -142,7 +140,7 @@ async function createProject(input) {
 
 async function updateProject(projectId, input) {
   const existingProject = await repo.findProjectById(projectId);
-  if (!existingProject) {
+  if (!existingProject || existingProject.deleted_at) {
     throw new AppError('Project not found', 404, 'NOT_FOUND');
   }
 
@@ -160,8 +158,14 @@ async function updateProject(projectId, input) {
       const currentExecutive = await repo.findPrimaryExecutiveByProjectId(projectId, client);
       if (currentExecutive) {
         await repo.updateExecutive({ executiveId: currentExecutive.id, name: input.executiveName, email: input.executiveEmail }, client);
+        if (input.executiveEmail) {
+          await authRepo.createUserIfMissing({ executiveId: currentExecutive.id, email: input.executiveEmail, displayName: input.executiveName }, client);
+        }
       } else {
-        await repo.createExecutive({ projectId, name: input.executiveName, email: input.executiveEmail }, client);
+        const executive = await repo.createExecutive({ projectId, name: input.executiveName, email: input.executiveEmail }, client);
+        if (input.executiveEmail) {
+          await authRepo.createUserIfMissing({ executiveId: executive.id, email: input.executiveEmail, displayName: input.executiveName }, client);
+        }
       }
     }
 
@@ -169,51 +173,53 @@ async function updateProject(projectId, input) {
   });
 }
 
-async function getExecutives(filters) {
-  return repo.listExecutives(filters);
+async function changeProjectStatus(projectId, input) {
+  const existingProject = await repo.findProjectById(projectId);
+  if (!existingProject || existingProject.deleted_at) {
+    throw new AppError('Project not found', 404, 'NOT_FOUND');
+  }
+
+  return repo.inTransaction(async (client) => {
+    await repo.updateProjectStatus(projectId, input.status, client);
+    return { success: true };
+  });
 }
 
-async function getAvailability(filters) {
-  return repo.listAvailability(filters);
+async function deleteProject(projectId) {
+  const existingProject = await repo.findProjectById(projectId);
+  if (!existingProject || existingProject.deleted_at) {
+    throw new AppError('Project not found', 404, 'NOT_FOUND');
+  }
+
+  return repo.inTransaction(async (client) => {
+    await repo.softDeleteProject(projectId, client);
+    return { success: true };
+  });
 }
 
-async function getVisits(filters) {
-  return repo.listVisits(filters);
-}
-
-async function getBlocks(filters) {
-  return repo.listBlocks(filters);
-}
+async function getExecutives(filters) { return repo.listExecutives(filters); }
+async function getAvailability(filters) { return repo.listAvailability(filters); }
+async function getVisits(filters) { return repo.listVisits(filters); }
+async function getBlocks(filters) { return repo.listBlocks(filters); }
 
 async function getCalendar(filters) {
   const staticCalendar = await repo.listCalendar(filters);
-
-  if (!filters.projectId) {
-    return staticCalendar;
-  }
+  if (!filters.projectId) return staticCalendar;
 
   const project = await repo.findProjectById(filters.projectId);
-  if (!project) {
+  if (!project || project.deleted_at) {
     throw new AppError('Project not found', 404, 'NOT_FOUND');
   }
 
   const scheduleRules = await repo.listProjectScheduleRules(filters.projectId);
-  if (scheduleRules.length === 0) {
-    return staticCalendar;
-  }
+  if (scheduleRules.length === 0) return staticCalendar;
 
   const executive = await repo.findPrimaryExecutiveByProjectId(filters.projectId);
-  if (!executive) {
-    return staticCalendar;
-  }
+  if (!executive) return staticCalendar;
 
   const effectiveFrom = filters.from || `${isoDate(toDateWithOffset(0))}T00:00:00`;
   const effectiveTo = filters.to || `${isoDate(toDateWithOffset(30))}T23:59:59`;
-  const dayBlocks = await repo.listProjectDayBlocksInRange({
-    projectId: filters.projectId,
-    from: effectiveFrom,
-    to: effectiveTo
-  });
+  const dayBlocks = await repo.listProjectDayBlocksInRange({ projectId: filters.projectId, from: effectiveFrom, to: effectiveTo });
 
   const dynamicAvailability = buildDynamicAvailability({
     projectId: filters.projectId,
@@ -249,23 +255,14 @@ async function getCalendar(filters) {
 
 async function bookVisit(input) {
   const project = await repo.findProjectById(input.projectId);
-  if (!project) {
-    throw new AppError('Project not found', 404, 'NOT_FOUND');
-  }
+  if (!project || project.deleted_at) throw new AppError('Project not found', 404, 'NOT_FOUND');
 
   const executive = await repo.findExecutiveById(input.executiveId);
-  if (!executive) {
-    throw new AppError('Executive not found', 404, 'NOT_FOUND');
-  }
-
-  if (executive.project_id !== input.projectId) {
-    throw new AppError('Executive does not belong to project', 400, 'VALIDATION_ERROR');
-  }
+  if (!executive) throw new AppError('Executive not found', 404, 'NOT_FOUND');
+  if (executive.project_id !== input.projectId) throw new AppError('Executive does not belong to project', 400, 'VALIDATION_ERROR');
 
   const slot = await repo.findOpenAvailability(input.availabilityId, input.executiveId);
-  if (!slot) {
-    throw new AppError('Availability not found or already booked', 404, 'NOT_FOUND');
-  }
+  if (!slot) throw new AppError('Availability not found or already booked', 404, 'NOT_FOUND');
 
   return repo.inTransaction(async (client) => {
     const visitRow = await repo.createVisit({
@@ -288,34 +285,22 @@ async function bookVisit(input) {
 
 async function rescheduleVisit(input) {
   const visit = await repo.findBookedVisit(input.visitId);
-  if (!visit) {
-    throw new AppError('Active visit not found', 404, 'NOT_FOUND');
-  }
+  if (!visit) throw new AppError('Active visit not found', 404, 'NOT_FOUND');
 
   const newSlot = await repo.findOpenAvailability(input.newAvailabilityId, visit.executive_id);
-  if (!newSlot) {
-    throw new AppError('New availability not found or already booked', 404, 'NOT_FOUND');
-  }
+  if (!newSlot) throw new AppError('New availability not found or already booked', 404, 'NOT_FOUND');
 
   return repo.inTransaction(async (client) => {
     await repo.markAvailabilityFree(visit.availability_id, client);
     await repo.markAvailabilityBooked(input.newAvailabilityId, client);
-    await repo.updateVisitSchedule({
-      visitId: input.visitId,
-      availabilityId: input.newAvailabilityId,
-      startsAt: newSlot.slot_start,
-      endsAt: newSlot.slot_end
-    }, client);
-
+    await repo.updateVisitSchedule({ visitId: input.visitId, availabilityId: input.newAvailabilityId, startsAt: newSlot.slot_start, endsAt: newSlot.slot_end }, client);
     return { success: true };
   });
 }
 
 async function cancelVisit(input) {
   const visit = await repo.findBookedVisit(input.visitId);
-  if (!visit) {
-    throw new AppError('Active visit not found', 404, 'NOT_FOUND');
-  }
+  if (!visit) throw new AppError('Active visit not found', 404, 'NOT_FOUND');
 
   return repo.inTransaction(async (client) => {
     await repo.cancelVisit(input.visitId, client);
@@ -326,34 +311,18 @@ async function cancelVisit(input) {
 
 async function setSlotStatus(input) {
   const project = await repo.findProjectById(input.projectId);
-  if (!project) {
-    throw new AppError('Project not found', 404, 'NOT_FOUND');
-  }
+  if (!project || project.deleted_at) throw new AppError('Project not found', 404, 'NOT_FOUND');
 
   const executive = await repo.findPrimaryExecutiveByProjectId(input.projectId);
-  if (!executive) {
-    throw new AppError('No executive assigned to project', 400, 'VALIDATION_ERROR');
-  }
+  if (!executive) throw new AppError('No executive assigned to project', 400, 'VALIDATION_ERROR');
 
-  const visitInSlot = await repo.findActiveVisitBySlot({
-    projectId: input.projectId,
-    executiveId: executive.id,
-    startsAt: input.startsAt,
-    endsAt: input.endsAt
-  });
-
-  const blockInSlot = await repo.findBlockBySlot({
-    executiveId: executive.id,
-    blockStart: input.startsAt,
-    blockEnd: input.endsAt
-  });
+  const visitInSlot = await repo.findActiveVisitBySlot({ projectId: input.projectId, executiveId: executive.id, startsAt: input.startsAt, endsAt: input.endsAt });
+  const blockInSlot = await repo.findBlockBySlot({ executiveId: executive.id, blockStart: input.startsAt, blockEnd: input.endsAt });
 
   return repo.inTransaction(async (client) => {
     if (visitInSlot && input.status !== 'booked') {
       await repo.cancelVisit(visitInSlot.id, client);
-      if (visitInSlot.availability_id) {
-        await repo.markAvailabilityFree(visitInSlot.availability_id, client);
-      }
+      if (visitInSlot.availability_id) await repo.markAvailabilityFree(visitInSlot.availability_id, client);
     }
 
     if (blockInSlot && input.status !== 'blocked') {
@@ -361,9 +330,7 @@ async function setSlotStatus(input) {
     }
 
     if (input.status === 'booked') {
-      if (blockInSlot) {
-        await repo.deleteBlock(blockInSlot.id, client);
-      }
+      if (blockInSlot) await repo.deleteBlock(blockInSlot.id, client);
 
       if (visitInSlot) {
         await repo.updateVisitDetails({
@@ -393,14 +360,9 @@ async function setSlotStatus(input) {
     if (input.status === 'blocked') {
       if (visitInSlot) {
         await repo.cancelVisit(visitInSlot.id, client);
-        if (visitInSlot.availability_id) {
-          await repo.markAvailabilityFree(visitInSlot.availability_id, client);
-        }
+        if (visitInSlot.availability_id) await repo.markAvailabilityFree(visitInSlot.availability_id, client);
       }
-
-      if (blockInSlot) {
-        await repo.deleteBlock(blockInSlot.id, client);
-      }
+      if (blockInSlot) await repo.deleteBlock(blockInSlot.id, client);
 
       await repo.createBlock({
         executiveId: executive.id,
@@ -418,6 +380,8 @@ module.exports = {
   getProjects,
   createProject,
   updateProject,
+  changeProjectStatus,
+  deleteProject,
   getExecutives,
   getAvailability,
   getVisits,

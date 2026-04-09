@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { useAuth } from '../auth/AuthContext';
 
 export default function Shell({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -12,7 +14,7 @@ export default function Shell({ children }) {
 
   return (
     <div className="app-shell bg-surface min-h-screen">
-      <Sidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <Sidebar isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} user={user} />
 
       {mobileMenuOpen && (
         <button
@@ -46,8 +48,15 @@ export default function Shell({ children }) {
             <button className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>notifications</span>
             </button>
-            <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
-              <span className="material-symbols-outlined text-white" style={{ fontSize: 16 }}>person</span>
+            <button
+              type="button"
+              onClick={logout}
+              className="px-3 py-1.5 text-xs font-semibold text-on-surface-variant hover:bg-surface-container-low rounded-md transition-colors"
+            >
+              Salir
+            </button>
+            <div className="w-auto min-w-8 h-8 rounded-full bg-primary-container flex items-center justify-center px-2">
+              <span className="text-white text-xs font-bold">{user?.displayName?.split(' ').map((s) => s[0]).slice(0,2).join('') || 'U'}</span>
             </div>
           </div>
         </header>

@@ -15,6 +15,15 @@ async function updateProject(projectId, body) {
   return service.updateProject(projectId, input);
 }
 
+async function changeProjectStatus(projectId, body) {
+  const input = validators.validateProjectStatusBody(body);
+  return service.changeProjectStatus(projectId, input);
+}
+
+async function deleteProject(projectId) {
+  return service.deleteProject(projectId);
+}
+
 async function getExecutives(query) {
   const filters = validators.validateExecutiveFilters(query);
   return service.getExecutives(filters);
@@ -64,6 +73,8 @@ module.exports = {
   getProjects,
   createProject,
   updateProject,
+  changeProjectStatus,
+  deleteProject,
   getExecutives,
   getAvailability,
   getVisits,
