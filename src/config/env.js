@@ -22,7 +22,7 @@ loadDotEnv();
 
 const ENV = {
   nodeEnv: process.env.NODE_ENV || 'development',
-  port: Number(process.env.PORT || 3000),
+  port: Number(process.env.PORT || 3100),
   databaseUrl: process.env.DATABASE_URL || '',
   corsOrigins: process.env.CORS_ORIGINS || '*',
   supabaseUrl: process.env.SUPABASE_URL || '',
