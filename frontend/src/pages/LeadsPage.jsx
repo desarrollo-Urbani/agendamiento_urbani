@@ -42,7 +42,7 @@ export default function LeadsPage() {
   const filtered = useMemo(() => {
     return visits.filter((v) => {
       const statusMatch = status === 'all' || String(v.status).toLowerCase() === status;
-      const text = `${v.client_name || ''} ${v.project_name || ''} ${v.executive_name || ''}`.toLowerCase();
+      const text = `${v.client_name || ''} ${v.project_name || ''} ${v.executive_name || ''} ${v.executive_email || ''}`.toLowerCase();
       const textMatch = text.includes(query.toLowerCase());
       return statusMatch && textMatch;
     });
@@ -98,8 +98,11 @@ export default function LeadsPage() {
               <tr className="bg-surface-container-low/40">
                 <th className="px-5 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant">Cliente</th>
                 <th className="px-5 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant">Email</th>
+                <th className="px-5 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant">Telefono</th>
+                <th className="px-5 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant">RUT</th>
                 <th className="px-5 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant">Proyecto</th>
                 <th className="px-5 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant">Ejecutivo</th>
+                <th className="px-5 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant">Email Ejecutivo</th>
                 <th className="px-5 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant">Inicio</th>
                 <th className="px-5 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant">Estado</th>
               </tr>
@@ -111,8 +114,11 @@ export default function LeadsPage() {
                   <tr key={visit.id} style={{ background: index % 2 === 0 ? '#ffffff' : '#f8f9ff' }}>
                     <td className="px-5 py-3 text-sm font-medium text-on-surface">{visit.client_name || 'Sin nombre'}</td>
                     <td className="px-5 py-3 text-sm text-on-surface-variant">{visit.client_email || '-'}</td>
+                    <td className="px-5 py-3 text-sm text-on-surface-variant">{visit.client_phone || '-'}</td>
+                    <td className="px-5 py-3 text-sm text-on-surface-variant">{visit.client_rut || '-'}</td>
                     <td className="px-5 py-3 text-sm text-on-surface">{visit.project_name || '-'}</td>
                     <td className="px-5 py-3 text-sm text-on-surface">{visit.executive_name || '-'}</td>
+                    <td className="px-5 py-3 text-sm text-on-surface-variant">{visit.executive_email || '-'}</td>
                     <td className="px-5 py-3 text-sm text-on-surface-variant">{String(visit.starts_at || '').replace('T', ' ').slice(0, 16)}</td>
                     <td className="px-5 py-3">
                       <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${STATUS_STYLES[key] || 'bg-surface-container text-on-surface-variant'}`}>
@@ -124,7 +130,7 @@ export default function LeadsPage() {
               })}
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-sm text-on-surface-variant">No se encontraron citas con esos filtros.</td>
+                  <td colSpan={9} className="px-5 py-12 text-center text-sm text-on-surface-variant">No se encontraron citas con esos filtros.</td>
                 </tr>
               )}
             </tbody>

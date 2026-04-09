@@ -49,7 +49,7 @@ const server = http.createServer(async (request, response) => {
       return;
     }
 
-    const frontendRoutes = new Set(['/', '/login', '/dashboard', '/catalogo', '/calendario', '/citas', '/cambiar-contrasena', '/administradores']);
+    const frontendRoutes = new Set(['/', '/login', '/restablecer-contrasena', '/dashboard', '/catalogo', '/calendario', '/citas', '/cambiar-contrasena', '/administradores']);
 
     if (request.method === 'GET' && (url.pathname === '/confirmacion' || url.pathname === '/formulario')) {
       response.writeHead(302, { Location: '/calendario' });

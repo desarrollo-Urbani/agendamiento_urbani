@@ -4,6 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { api } from '../lib/api';
+import { useAuth } from '../auth/AuthContext';
 
 function toIso(date, endOfDay = false) {
   return `${date}T${endOfDay ? '23:59:59' : '00:00:00'}`;
@@ -14,8 +15,9 @@ function FieldLabel({ children }) {
 }
 
 function ActionPanel({ activeEvent, nextSlots, newAvailabilityId, setNewAvailabilityId,
-  clientName, setClientName, clientEmail, setClientEmail,
-  actionLoading, reserveFromCalendar, rescheduleFromCalendar, cancelFromCalendar
+  clientName, setClientName, clientEmail, setClientEmail, clientPhone, setClientPhone, clientRut, setClientRut,
+  actionLoading, reserveFromCalendar, rescheduleFromCalendar, cancelFromCalendar,
+  canBlock, blockReason, setBlockReason, blockSelectedSlot
 }) {
   if (!activeEvent) {
     return (
@@ -58,6 +60,22 @@ function ActionPanel({ activeEvent, nextSlots, newAvailabilityId, setNewAvailabi
             className="w-full bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
           />
         </div>
+        <div>
+          <FieldLabel>Telefono del Cliente</FieldLabel>
+          <input
+            value={clientPhone} onChange={(e) => setClientPhone(e.target.value)}
+            placeholder="+569 1234 5678"
+            className="w-full bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
+          />
+        </div>
+        <div>
+          <FieldLabel>RUT del Cliente</FieldLabel>
+          <input
+            value={clientRut} onChange={(e) => setClientRut(e.target.value)}
+            placeholder="12.345.678-9"
+            className="w-full bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
+          />
+        </div>
         <button
           type="submit" disabled={actionLoading}
           className="w-full flex items-center justify-center gap-2 text-white text-sm font-semibold py-2.5 rounded-md active:scale-95 transition-all disabled:opacity-60"
@@ -66,6 +84,27 @@ function ActionPanel({ activeEvent, nextSlots, newAvailabilityId, setNewAvailabi
           <span className="material-symbols-outlined" style={{ fontSize: 16 }}>bookmark_add</span>
           {actionLoading ? 'Reservando...' : 'Confirmar Reserva'}
         </button>
+        {canBlock && (
+          <>
+            <div>
+              <FieldLabel>Motivo de bloqueo (admin)</FieldLabel>
+              <input
+                value={blockReason} onChange={(e) => setBlockReason(e.target.value)}
+                placeholder="Ej: Reunion interna"
+                className="w-full bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={blockSelectedSlot}
+              disabled={actionLoading}
+              className="w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-md active:scale-95 transition-all disabled:opacity-40 text-on-error-container bg-error-container hover:opacity-90"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>block</span>
+              {actionLoading ? 'Procesando...' : 'Bloquear horario'}
+            </button>
+          </>
+        )}
       </form>
     );
   }
@@ -113,6 +152,87 @@ function ActionPanel({ activeEvent, nextSlots, newAvailabilityId, setNewAvailabi
     );
   }
 
+  if (activeEvent.kind === 'selection') {
+    return (
+      <form onSubmit={reserveFromCalendar} className="space-y-4">
+        <div className="flex items-center gap-2 p-3 bg-[#fff8e1] rounded-md">
+          <span className="material-symbols-outlined text-[#8d6e00]" style={{ fontSize: 18 }}>schedule</span>
+          <div>
+            <span className="block text-xs font-bold text-[#8d6e00]">Horario seleccionado</span>
+            <span className="text-xs text-on-surface-variant">
+              {activeEvent.start.replace('T', ' ').slice(0, 16)} – {activeEvent.end.slice(11, 16)}
+            </span>
+          </div>
+        </div>
+        <div>
+          <FieldLabel>Ejecutivo</FieldLabel>
+          <p className="text-sm font-medium text-on-surface">{activeEvent.executiveName || 'Sin ejecutivo asignado'}</p>
+        </div>
+        <div>
+          <FieldLabel>Nombre del Cliente</FieldLabel>
+          <input
+            value={clientName} onChange={(e) => setClientName(e.target.value)}
+            placeholder="Nombre completo" required
+            className="w-full bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
+          />
+        </div>
+        <div>
+          <FieldLabel>Email del Cliente</FieldLabel>
+          <input
+            type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)}
+            placeholder="correo@ejemplo.com"
+            className="w-full bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
+          />
+        </div>
+        <div>
+          <FieldLabel>Telefono del Cliente</FieldLabel>
+          <input
+            value={clientPhone} onChange={(e) => setClientPhone(e.target.value)}
+            placeholder="+569 1234 5678"
+            className="w-full bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
+          />
+        </div>
+        <div>
+          <FieldLabel>RUT del Cliente</FieldLabel>
+          <input
+            value={clientRut} onChange={(e) => setClientRut(e.target.value)}
+            placeholder="12.345.678-9"
+            className="w-full bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
+          />
+        </div>
+        <button
+          type="submit" disabled={actionLoading || !activeEvent.executiveId}
+          className="w-full flex items-center justify-center gap-2 text-white text-sm font-semibold py-2.5 rounded-md active:scale-95 transition-all disabled:opacity-60"
+          style={{ background: 'linear-gradient(135deg, #000a1e, #002147)' }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>bookmark_add</span>
+          {actionLoading ? 'Reservando...' : 'Reservar horario seleccionado'}
+        </button>
+        {canBlock && (
+          <>
+            <div>
+              <FieldLabel>Motivo de bloqueo (admin)</FieldLabel>
+              <input
+                value={blockReason} onChange={(e) => setBlockReason(e.target.value)}
+                placeholder="Ej: Colacion / mantencion"
+                className="w-full bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={blockSelectedSlot}
+              disabled={actionLoading || !activeEvent.executiveId}
+              className="w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-md active:scale-95 transition-all disabled:opacity-40 text-on-error-container bg-error-container hover:opacity-90"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>block</span>
+              {actionLoading ? 'Procesando...' : 'Bloquear horario'}
+            </button>
+          </>
+        )}
+      </form>
+    );
+  }
+
   return (
     <div className="p-3 bg-surface-container-low rounded-md text-xs text-on-surface-variant font-medium">
       Este bloque esta marcado como no disponible.
@@ -121,6 +241,7 @@ function ActionPanel({ activeEvent, nextSlots, newAvailabilityId, setNewAvailabi
 }
 
 export default function CalendarioPage() {
+  const { user } = useAuth();
   const today = new Date().toISOString().slice(0, 10);
   const plusFourteen = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const [projects, setProjects] = useState([]);
@@ -133,6 +254,9 @@ export default function CalendarioPage() {
   const [newAvailabilityId, setNewAvailabilityId] = useState('');
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [clientRut, setClientRut] = useState('');
+  const [blockReason, setBlockReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -242,6 +366,10 @@ export default function CalendarioPage() {
   }, [calendar]);
 
   const onSelectEvent = (clickInfo) => {
+    if (!projectId) {
+      setError('Selecciona un proyecto para habilitar el calendario.');
+      return;
+    }
     setSuccess('');
     setError('');
     setNewAvailabilityId('');
@@ -254,17 +382,80 @@ export default function CalendarioPage() {
     });
   };
 
+  const onSelectRange = (selectionInfo) => {
+    if (!projectId) {
+      setError('Selecciona un proyecto para habilitar el calendario.');
+      return;
+    }
+    setSuccess('');
+    setError('');
+    setNewAvailabilityId('');
+
+    const start = selectionInfo.startStr || selectionInfo.dateStr;
+    let end = selectionInfo.endStr;
+    if (!end && start) {
+      const startDate = new Date(start);
+      end = new Date(startDate.getTime() + 60 * 60 * 1000).toISOString();
+    }
+    if (new Date(start).getTime() <= Date.now()) {
+      setError('No puedes seleccionar horarios pasados o en curso.');
+      return;
+    }
+
+    const match = calendar.availability.find((slot) =>
+      slot.slot_start === start && slot.slot_end === end && String(slot.project_id) === String(projectId)
+    );
+
+    if (match) {
+      setActiveEvent({
+        kind: 'availability',
+        title: `Disponible · ${match.executive_name}`,
+        start: match.slot_start,
+        end: match.slot_end,
+        slotId: match.id,
+        executiveId: match.executive_id,
+        projectId: match.project_id,
+        executiveName: match.executive_name
+      });
+      return;
+    }
+
+    const selectedProject = projects.find((p) => String(p.id) === String(projectId));
+    setActiveEvent({
+      kind: 'selection',
+      title: 'Horario seleccionado',
+      start,
+      end,
+      projectId: Number(projectId),
+      executiveId: selectedProject?.manager_id ? Number(selectedProject.manager_id) : null,
+      executiveName: selectedProject?.manager_name || null
+    });
+  };
+
   const reserveFromCalendar = async (e) => {
     e.preventDefault();
-    if (!activeEvent || activeEvent.kind !== 'availability') return;
+    if (!activeEvent || !['availability', 'selection'].includes(activeEvent.kind)) return;
     setActionLoading(true);
     try {
+      if (!activeEvent.executiveId) {
+        throw new Error('Este proyecto no tiene ejecutivo asignado para reservar.');
+      }
+      const body = {
+        projectId: Number(activeEvent.projectId),
+        executiveId: Number(activeEvent.executiveId),
+        slotStart: activeEvent.start,
+        slotEnd: activeEvent.end,
+        clientName,
+        clientEmail,
+        clientPhone,
+        clientRut
+      };
       await api('/api/book', {
         method: 'POST',
-        body: JSON.stringify({ projectId: Number(activeEvent.projectId), executiveId: Number(activeEvent.executiveId), availabilityId: Number(activeEvent.slotId), clientName, clientEmail })
+        body: JSON.stringify(body)
       });
       setSuccess('Reserva creada correctamente.');
-      setClientName(''); setClientEmail(''); setActiveEvent(null);
+      setClientName(''); setClientEmail(''); setClientPhone(''); setClientRut(''); setBlockReason(''); setActiveEvent(null);
       await loadCalendar();
     } catch (err) { setError(err.message); }
     finally { setActionLoading(false); }
@@ -292,6 +483,31 @@ export default function CalendarioPage() {
       await loadCalendar();
     } catch (err) { setError(err.message); }
     finally { setActionLoading(false); }
+  };
+
+  const blockSelectedSlot = async () => {
+    if (!activeEvent || !activeEvent.projectId || !activeEvent.start || !activeEvent.end) return;
+    setActionLoading(true);
+    try {
+      await api('/api/calendar/slot-status', {
+        method: 'POST',
+        body: JSON.stringify({
+          projectId: Number(activeEvent.projectId),
+          startsAt: activeEvent.start,
+          endsAt: activeEvent.end,
+          status: 'blocked',
+          observation: blockReason || 'Bloqueo manual por supervisor'
+        })
+      });
+      setSuccess('Horario bloqueado correctamente.');
+      setBlockReason('');
+      setActiveEvent(null);
+      await loadCalendar();
+    } catch (err) {
+      setError(err.message || 'No se pudo bloquear el horario');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -342,6 +558,9 @@ export default function CalendarioPage() {
                 <option value="">Todos los proyectos</option>
                 {projects.map((p) => <option key={p.id} value={p.id}>#{p.id} {p.name}</option>)}
               </select>
+              {!projectId && (
+                <p className="text-[11px] text-amber-700 mt-1.5">Debes seleccionar un proyecto para habilitar la seleccion de horarios.</p>
+              )}
             </div>
             <div>
               <FieldLabel>Desde</FieldLabel>
@@ -380,6 +599,10 @@ export default function CalendarioPage() {
               <span className="w-3 h-3 rounded-sm bg-[#f1f3f4]" style={{ borderLeft: '3px solid #9aa0a6' }}></span>
               <span className="text-xs font-medium text-on-surface-variant">Bloqueado</span>
             </div>
+            <div className="flex items-center gap-2.5">
+              <span className="w-3 h-3 rounded-sm bg-[#fff8e1]" style={{ borderLeft: '3px solid #8d6e00' }}></span>
+              <span className="text-xs font-medium text-on-surface-variant">Seleccion manual (reservable)</span>
+            </div>
           </div>
 
           {/* Action panel */}
@@ -396,10 +619,18 @@ export default function CalendarioPage() {
               setClientName={setClientName}
               clientEmail={clientEmail}
               setClientEmail={setClientEmail}
+              clientPhone={clientPhone}
+              setClientPhone={setClientPhone}
+              clientRut={clientRut}
+              setClientRut={setClientRut}
               actionLoading={actionLoading}
               reserveFromCalendar={reserveFromCalendar}
               rescheduleFromCalendar={rescheduleFromCalendar}
               cancelFromCalendar={cancelFromCalendar}
+              canBlock={user?.role === 'admin'}
+              blockReason={blockReason}
+              setBlockReason={setBlockReason}
+              blockSelectedSlot={blockSelectedSlot}
             />
           </div>
         </aside>
@@ -421,6 +652,14 @@ export default function CalendarioPage() {
             slotMaxTime="19:00:00"
             scrollTime="10:00:00"
             events={calendarEvents}
+            selectable={Boolean(projectId)}
+            selectMirror
+            longPressDelay={100}
+            selectLongPressDelay={100}
+            selectMinDistance={0}
+            selectAllow={(info) => info.start && info.start.getTime() > Date.now()}
+            dateClick={onSelectRange}
+            select={onSelectRange}
             eventClick={onSelectEvent}
             expandRows
             stickyHeaderDates

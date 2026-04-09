@@ -169,7 +169,7 @@ async function listVisits(filters) {
     conditions.push(`v.ends_at <= $${params.length}`);
   }
   const { rows } = await q(
-    `SELECT v.*, e.name AS executive_name, p.name AS project_name
+    `SELECT v.*, e.name AS executive_name, e.email AS executive_email, p.name AS project_name
      FROM visits v
      JOIN executives e ON e.id = v.executive_id
      JOIN projects p ON p.id = v.project_id
@@ -220,8 +220,8 @@ async function listCalendar(filters) {
   const b = buildParams('e.project_id', 'b.block_start', 'b.block_end');
 
   const [aRes, vRes, bRes] = await Promise.all([
-    q(`SELECT a.*, e.project_id, e.name AS executive_name FROM availability a JOIN executives e ON e.id = a.executive_id WHERE ${a.where} ORDER BY a.slot_start ASC`, a.vals),
-    q(`SELECT v.*, e.name AS executive_name FROM visits v JOIN executives e ON e.id = v.executive_id WHERE ${v.where} ORDER BY v.starts_at ASC`, v.vals),
+    q(`SELECT a.*, e.project_id, e.name AS executive_name FROM availability a JOIN executives e ON e.id = a.executive_id WHERE ${a.where} AND a.is_booked = 0 ORDER BY a.slot_start ASC`, a.vals),
+    q(`SELECT v.*, e.name AS executive_name, e.email AS executive_email FROM visits v JOIN executives e ON e.id = v.executive_id WHERE ${v.where} ORDER BY v.starts_at ASC`, v.vals),
     q(`SELECT b.*, e.project_id, e.name AS executive_name FROM blocks b JOIN executives e ON e.id = b.executive_id WHERE ${b.where} ORDER BY b.block_start ASC`, b.vals)
   ]);
   return { availability: aRes.rows, visits: vRes.rows, blocks: bRes.rows };
@@ -247,6 +247,30 @@ async function listProjectDayBlocksInRange(filters) {
     params
   );
   return rows;
+}
+
+async function findConflictForSlot({ executiveId, startsAt, endsAt }, client) {
+  const { rows: visitRows } = await q(
+    `SELECT id FROM visits WHERE executive_id = $1 AND status = 'booked' AND starts_at < $3 AND ends_at > $2`,
+    [executiveId, startsAt, endsAt],
+    client
+  );
+  if (visitRows.length > 0) return visitRows[0];
+  const { rows: blockRows } = await q(
+    `SELECT id FROM blocks WHERE executive_id = $1 AND block_start < $3 AND block_end > $2`,
+    [executiveId, startsAt, endsAt],
+    client
+  );
+  return blockRows[0] || null;
+}
+
+async function createAvailability({ executiveId, slotStart, slotEnd, isBooked }, client) {
+  const { rows } = await q(
+    `INSERT INTO availability (executive_id, slot_start, slot_end, is_booked) VALUES ($1, $2, $3, $4) RETURNING *`,
+    [executiveId, slotStart, slotEnd, isBooked ? 1 : 0],
+    client
+  );
+  return rows[0];
 }
 
 async function findOpenAvailability(availabilityId, executiveId, client) {
@@ -304,9 +328,9 @@ async function updateExecutive(input, client) {
 
 async function createVisit(input, client) {
   const { rows } = await q(
-    `INSERT INTO visits (project_id, executive_id, availability_id, client_name, client_email, unit_to_visit, observation, starts_at, ends_at, status)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
-    [input.projectId, input.executiveId, input.availabilityId, input.clientName, input.clientEmail, input.unitToVisit, input.observation, input.startsAt, input.endsAt, input.status],
+    `INSERT INTO visits (project_id, executive_id, availability_id, client_name, client_email, client_phone, client_rut, unit_to_visit, observation, starts_at, ends_at, status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id`,
+    [input.projectId, input.executiveId, input.availabilityId, input.clientName, input.clientEmail, input.clientPhone || null, input.clientRut || null, input.unitToVisit, input.observation, input.startsAt, input.endsAt, input.status],
     client
   );
   return rows[0];
@@ -344,9 +368,9 @@ async function findBlockBySlot(input) {
 async function updateVisitDetails(input, client) {
   await q(
     `UPDATE visits
-     SET client_name = $1, client_email = $2, unit_to_visit = $3, observation = $4, status = $5, updated_at = NOW()
-     WHERE id = $6`,
-    [input.clientName, input.clientEmail, input.unitToVisit, input.observation, input.status, input.visitId],
+     SET client_name = $1, client_email = $2, client_phone = $3, client_rut = $4, unit_to_visit = $5, observation = $6, status = $7, updated_at = NOW()
+     WHERE id = $8`,
+    [input.clientName, input.clientEmail, input.clientPhone || null, input.clientRut || null, input.unitToVisit, input.observation, input.status, input.visitId],
     client
   );
 }
@@ -412,5 +436,7 @@ module.exports = {
   markAvailabilityFree,
   updateVisitSchedule,
   cancelVisit,
-  deleteBlock
+  deleteBlock,
+  findConflictForSlot,
+  createAvailability
 };

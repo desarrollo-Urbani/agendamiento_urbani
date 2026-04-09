@@ -10,6 +10,15 @@ async function login(body, context) {
   });
 }
 
+async function loginByEmail(body, context) {
+  const input = authValidators.validateEmailOnlyBody(body);
+  return authService.loginByEmail({
+    ...input,
+    ipAddress: context.ipAddress,
+    userAgent: context.userAgent
+  });
+}
+
 async function logout(sessionToken) {
   return authService.logout(sessionToken);
 }
@@ -53,6 +62,7 @@ async function updateUserRole(body, currentUser, userId) {
 
 module.exports = {
   login,
+  loginByEmail,
   logout,
   me,
   changePassword,

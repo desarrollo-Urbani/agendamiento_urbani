@@ -25,6 +25,8 @@ const ENV = {
   port: Number(process.env.PORT || 3000),
   databaseUrl: process.env.DATABASE_URL || '',
   corsOrigins: process.env.CORS_ORIGINS || '*',
+  supabaseUrl: process.env.SUPABASE_URL || '',
+  supabaseJwtAudience: process.env.SUPABASE_JWT_AUDIENCE || 'authenticated',
   sessionCookieName: process.env.SESSION_COOKIE_NAME || 'urbani_session',
   sessionTtlHours: Number(process.env.SESSION_TTL_HOURS || 24),
   resetTtlMinutes: Number(process.env.RESET_TTL_MINUTES || 30)

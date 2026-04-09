@@ -6,6 +6,7 @@ import CatalogoPage from './pages/CatalogoPage';
 import CalendarioPage from './pages/CalendarioPage';
 import LeadsPage from './pages/LeadsPage';
 import LoginPage from './pages/LoginPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import ProjectHistoryPage from './pages/ProjectHistoryPage';
 import AdminUsersPage from './pages/AdminUsersPage';
@@ -22,6 +23,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/dashboard" element={<PrivateLayout><DashboardPage /></PrivateLayout>} />

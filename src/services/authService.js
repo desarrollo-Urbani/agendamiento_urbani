@@ -2,6 +2,7 @@
 const repo = require('../repositories/authRepository');
 const { AppError } = require('../shared/errors');
 const { hashPassword, verifyPassword, randomToken } = require('../shared/security');
+const { verifySupabaseJwt } = require('../shared/supabaseAuth');
 const PROTECTED_ADMIN_EMAIL = 'desarollo@urbani.cl';
 
 function toUserDTO(row) {
@@ -26,6 +27,23 @@ async function login({ email, password, ipAddress, userAgent }) {
   const user = await repo.findUserByEmail(email);
   if (!user || !verifyPassword(password, user.password_hash)) {
     throw new AppError('Credenciales invalidas', 401, 'AUTH_INVALID');
+  }
+
+  const token = randomToken(48);
+  const expiresAt = buildExpiryDate(ENV.sessionTtlHours);
+  await repo.createSession({ userId: user.id, token, expiresAt, ipAddress, userAgent });
+
+  return {
+    sessionToken: token,
+    expiresAt,
+    user: toUserDTO(user)
+  };
+}
+
+async function loginByEmail({ email, ipAddress, userAgent }) {
+  const user = await repo.findUserByEmail(email);
+  if (!user) {
+    throw new AppError('Usuario no encontrado', 404, 'NOT_FOUND');
   }
 
   const token = randomToken(48);
@@ -144,8 +162,37 @@ async function ensureDefaultAdmin() {
   await repo.ensureAdminByEmail(PROTECTED_ADMIN_EMAIL, 'Administrador Principal');
 }
 
+async function resolveAccessToken(accessToken) {
+  const claims = await verifySupabaseJwt(accessToken);
+  const email = String(claims.email || '').toLowerCase();
+  if (!email) throw new AppError('Token sin email', 401, 'AUTH_INVALID');
+
+  let user = await repo.findAnyUserByEmail(email);
+  if (!user) {
+    user = await repo.createUserFromSupabase({
+      email,
+      displayName: claims.user_metadata && claims.user_metadata.full_name
+        ? claims.user_metadata.full_name
+        : email
+    });
+  } else if (Number(user.is_active) !== 1) {
+    await repo.activateUser(user.id);
+    user = await repo.findUserById(user.id);
+  }
+
+  if (!user || Number(user.is_active) !== 1) {
+    throw new AppError('Usuario inactivo', 403, 'USER_INACTIVE');
+  }
+
+  return {
+    user: toUserDTO(user),
+    claims
+  };
+}
+
 module.exports = {
   login,
+  loginByEmail,
   logout,
   resolveSession,
   changePassword,
@@ -153,5 +200,6 @@ module.exports = {
   resetPassword,
   listUsersForAdmin,
   updateUserRoleForAdmin,
-  ensureDefaultAdmin
+  ensureDefaultAdmin,
+  resolveAccessToken
 };

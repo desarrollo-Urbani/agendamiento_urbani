@@ -162,6 +162,32 @@ async function seed() {
       }
     ];
 
+    const scheduleRuleDefs = {
+      'TUE_SUN_10_14_15_18': [2, 3, 4, 5, 6, 0].flatMap((wd) => [
+        { weekday: wd, startTime: '10:00', endTime: '14:00', slotMinutes: 60 },
+        { weekday: wd, startTime: '15:00', endTime: '18:00', slotMinutes: 60 }
+      ]),
+      'MON_THU_10_14_15_18_FRI_10_13': [
+        ...[1, 2, 3, 4].flatMap((wd) => [
+          { weekday: wd, startTime: '10:00', endTime: '14:00', slotMinutes: 60 },
+          { weekday: wd, startTime: '15:00', endTime: '18:00', slotMinutes: 60 }
+        ]),
+        { weekday: 5, startTime: '10:00', endTime: '13:00', slotMinutes: 60 }
+      ],
+      'MON_SUN_10_14_15_18': [0, 1, 2, 3, 4, 5, 6].flatMap((wd) => [
+        { weekday: wd, startTime: '10:00', endTime: '14:00', slotMinutes: 60 },
+        { weekday: wd, startTime: '15:00', endTime: '18:00', slotMinutes: 60 }
+      ]),
+      'MON_SUN_11_14_15_19': [0, 1, 2, 3, 4, 5, 6].flatMap((wd) => [
+        { weekday: wd, startTime: '11:00', endTime: '14:00', slotMinutes: 60 },
+        { weekday: wd, startTime: '15:00', endTime: '19:00', slotMinutes: 60 }
+      ]),
+      'MON_FRI_10_14_15_18': [1, 2, 3, 4, 5].flatMap((wd) => [
+        { weekday: wd, startTime: '10:00', endTime: '14:00', slotMinutes: 60 },
+        { weekday: wd, startTime: '15:00', endTime: '18:00', slotMinutes: 60 }
+      ])
+    };
+
     const projectRows = [];
     for (const project of projectsData) {
       const { rows } = await client.query(
@@ -170,6 +196,17 @@ async function seed() {
         [project.name, project.typologies, project.deliveryDate, project.salesOfficeAddress, project.attentionHours]
       );
       projectRows.push({ id: rows[0].id, ...project });
+    }
+
+    for (const project of projectRows) {
+      const rules = scheduleRuleDefs[project.scheduleId] || [];
+      for (const rule of rules) {
+        await client.query(
+          `INSERT INTO project_schedule_rules (project_id, weekday, start_time, end_time, slot_minutes)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [project.id, rule.weekday, rule.startTime, rule.endTime, rule.slotMinutes]
+        );
+      }
     }
 
     const firstNames = ['Ana', 'Luis', 'Carla', 'Diego', 'Sofia', 'Matias', 'Fernanda', 'Rocio', 'Javier', 'Camila', 'Tomas'];

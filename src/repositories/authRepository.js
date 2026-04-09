@@ -16,6 +16,18 @@ async function findUserByEmail(email) {
   return rows[0] || null;
 }
 
+async function findAnyUserByEmail(email) {
+  const { rows } = await q(
+    `SELECT u.*, e.project_id, e.name AS executive_name
+     FROM users u
+     LEFT JOIN executives e ON e.id = u.executive_id
+     WHERE lower(u.email) = lower($1)
+     LIMIT 1`,
+    [email]
+  );
+  return rows[0] || null;
+}
+
 async function findUserById(userId) {
   const { rows } = await q(
     `SELECT u.*, e.project_id, e.name AS executive_name
@@ -148,9 +160,27 @@ async function ensureAdminByEmail(email, displayName = 'Administrador') {
   return created.rows[0] || null;
 }
 
+async function createUserFromSupabase({ email, displayName }, client) {
+  const { hashPassword } = require('../shared/security');
+  const placeholder = hashPassword(`supabase-${Date.now()}-${Math.random()}`);
+  const { rows } = await q(
+    `INSERT INTO users (email, display_name, role, password_hash, executive_id, is_active)
+     VALUES ($1,$2,'executive',$3,NULL,1)
+     RETURNING *`,
+    [String(email).toLowerCase(), displayName || email, placeholder],
+    client
+  );
+  return rows[0] || null;
+}
+
+async function activateUser(userId, client) {
+  await q(`UPDATE users SET is_active = 1, updated_at = NOW() WHERE id = $1`, [userId], client);
+}
+
 module.exports = {
   q,
   findUserByEmail,
+  findAnyUserByEmail,
   findUserById,
   createSession,
   findSession,
@@ -163,5 +193,7 @@ module.exports = {
   createUserIfMissing,
   listUsers,
   updateUserRole,
-  ensureAdminByEmail
+  ensureAdminByEmail,
+  createUserFromSupabase,
+  activateUser
 };

@@ -14,14 +14,24 @@ function getIpAddress(request) {
   return request.socket && request.socket.remoteAddress ? request.socket.remoteAddress : null;
 }
 
+function getBearerToken(request) {
+  const header = request.headers.authorization || '';
+  if (!header.toLowerCase().startsWith('bearer ')) return null;
+  return header.slice(7).trim();
+}
+
 async function buildContext(request) {
+  const accessToken = getBearerToken(request);
   const cookies = parseCookies(request.headers.cookie || '');
   const sessionToken = cookies[ENV.sessionCookieName] || null;
-  const resolved = sessionToken ? await authService.resolveSession(sessionToken) : null;
+  const resolvedByToken = accessToken ? await authService.resolveAccessToken(accessToken) : null;
+  const resolvedBySession = !resolvedByToken && sessionToken ? await authService.resolveSession(sessionToken) : null;
+  const resolved = resolvedByToken || resolvedBySession;
 
   return {
     ipAddress: getIpAddress(request),
     userAgent: request.headers['user-agent'] || null,
+    accessToken,
     sessionToken,
     user: resolved ? resolved.user : null
   };
@@ -49,50 +59,42 @@ async function handleApi(request, response, url) {
   const context = await buildContext(request);
 
   if (request.method === 'POST' && url.pathname === '/api/auth/login') {
+    return sendJson(response, 410, { error: 'Login con clave deshabilitado temporalmente. Usa ingreso por correo.' });
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/auth/login-email') {
     const body = await readJsonBody(request);
-    try {
-      const result = await authController.login(body, context);
-      await auditService.logAudit({
-        action: 'login',
-        module: 'auth',
-        entityType: 'session',
-        entityId: result.user.id,
-        description: 'Inicio de sesion exitoso',
-        status: 'success',
-        userId: result.user.id,
-        ipAddress: context.ipAddress,
-        userAgent: context.userAgent
-      });
+    const result = await authController.loginByEmail(body, context);
 
-      const cookie = serializeCookie(ENV.sessionCookieName, result.sessionToken, {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'Lax',
-        secure: ENV.nodeEnv === 'production',
-        maxAge: ENV.sessionTtlHours * 3600
-      });
+    await auditService.logAudit({
+      action: 'login',
+      module: 'auth',
+      entityType: 'session',
+      entityId: result.user.id,
+      description: 'Inicio de sesion por correo (sin clave)',
+      status: 'success',
+      userId: result.user.id,
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent
+    });
 
-      response.setHeader('Set-Cookie', cookie);
-      return sendJson(response, 200, { user: result.user });
-    } catch (error) {
-      await auditService.logAudit({
-        action: 'failed_login',
-        module: 'auth',
-        entityType: 'session',
-        entityId: null,
-        description: `Intento fallido para ${body && body.email ? body.email : 'desconocido'}`,
-        status: 'failed',
-        userId: null,
-        ipAddress: context.ipAddress,
-        userAgent: context.userAgent
-      });
-      throw error;
-    }
+    const cookie = serializeCookie(ENV.sessionCookieName, result.sessionToken, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+      secure: ENV.nodeEnv === 'production',
+      maxAge: ENV.sessionTtlHours * 3600
+    });
+
+    response.setHeader('Set-Cookie', cookie);
+    return sendJson(response, 200, { user: result.user });
   }
 
   if (request.method === 'POST' && url.pathname === '/api/auth/logout') {
     requireAuth(context);
-    await authController.logout(context.sessionToken);
+    if (context.sessionToken) {
+      await authController.logout(context.sessionToken);
+    }
     await auditService.logAudit({
       action: 'logout',
       module: 'auth',
@@ -104,7 +106,6 @@ async function handleApi(request, response, url) {
       ipAddress: context.ipAddress,
       userAgent: context.userAgent
     });
-
     response.setHeader('Set-Cookie', serializeCookie(ENV.sessionCookieName, '', { path: '/', maxAge: 0, sameSite: 'Lax' }));
     return sendJson(response, 200, { success: true });
   }
@@ -115,29 +116,11 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'POST' && url.pathname === '/api/auth/change-password') {
-    requireAuth(context);
-    const body = await readJsonBody(request);
-    const result = await authController.changePassword(body, context.user.id);
-
-    await auditService.logAudit({
-      action: 'change_password',
-      module: 'auth',
-      entityType: 'user',
-      entityId: context.user.id,
-      description: 'Cambio de contrasena',
-      status: 'success',
-      userId: context.user.id,
-      ipAddress: context.ipAddress,
-      userAgent: context.userAgent
-    });
-
-    return sendJson(response, 200, result);
+    return sendJson(response, 410, { error: 'Cambio local deshabilitado: use Supabase Auth' });
   }
 
   if (request.method === 'POST' && url.pathname === '/api/auth/request-password-reset') {
     const body = await readJsonBody(request);
-    const result = await authController.requestPasswordReset(body, context);
-
     await auditService.logAudit({
       action: 'request_password_reset',
       module: 'auth',
@@ -149,13 +132,10 @@ async function handleApi(request, response, url) {
       ipAddress: context.ipAddress,
       userAgent: context.userAgent
     });
-
-    return sendJson(response, 200, result);
+    return sendJson(response, 200, { success: true });
   }
 
   if (request.method === 'POST' && url.pathname === '/api/auth/reset-password') {
-    const body = await readJsonBody(request);
-    const result = await authController.resetPassword(body);
     await auditService.logAudit({
       action: 'reset_password',
       module: 'auth',
@@ -167,7 +147,43 @@ async function handleApi(request, response, url) {
       ipAddress: context.ipAddress,
       userAgent: context.userAgent
     });
-    return sendJson(response, 200, result);
+    return sendJson(response, 200, { success: true });
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/auth/sync') {
+    if (!context.user && context.accessToken) {
+      const resolved = await authService.resolveAccessToken(context.accessToken);
+      context.user = resolved.user;
+    }
+    requireAuth(context);
+    await auditService.logAudit({
+      action: 'login',
+      module: 'auth',
+      entityType: 'session',
+      entityId: context.user.id,
+      description: 'Inicio de sesion exitoso (Supabase)',
+      status: 'success',
+      userId: context.user.id,
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent
+    });
+    return sendJson(response, 200, { user: context.user });
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/auth/failed-login') {
+    const body = await readJsonBody(request);
+    await auditService.logAudit({
+      action: 'failed_login',
+      module: 'auth',
+      entityType: 'session',
+      entityId: null,
+      description: `Intento fallido para ${body && body.email ? body.email : 'desconocido'}`,
+      status: 'failed',
+      userId: null,
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent
+    });
+    return sendJson(response, 200, { success: true });
   }
 
   if (request.method === 'GET' && url.pathname === '/api/admin/users') {
@@ -318,6 +334,7 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'POST' && url.pathname === '/api/calendar/slot-status') {
+    requireAdmin(context);
     const body = await readJsonBody(request);
     const result = await controller.setSlotStatus(body);
 

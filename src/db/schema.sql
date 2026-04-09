@@ -119,6 +119,8 @@ CREATE TABLE visits (
   availability_id INTEGER REFERENCES availability(id),
   client_name TEXT NOT NULL,
   client_email TEXT,
+  client_phone TEXT,
+  client_rut TEXT,
   unit_to_visit TEXT,
   observation TEXT,
   starts_at TEXT NOT NULL,

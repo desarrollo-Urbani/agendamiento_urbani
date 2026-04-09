@@ -124,13 +124,28 @@ function validateBookBody(body) {
   if (normalizedEmail && !isValidEmail(normalizedEmail)) {
     throw new AppError('clientEmail format is invalid', 400, 'VALIDATION_ERROR');
   }
+  const clientPhone = body.clientPhone ? String(body.clientPhone).trim() : null;
+  const clientRut = body.clientRut ? String(body.clientRut).trim() : null;
+
+  const rawAvailabilityId = body.availabilityId ? Number(body.availabilityId) : null;
+  const availabilityId = (rawAvailabilityId && Number.isInteger(rawAvailabilityId) && rawAvailabilityId > 0) ? rawAvailabilityId : null;
+  const slotStart = body.slotStart ? String(body.slotStart).trim() : null;
+  const slotEnd = body.slotEnd ? String(body.slotEnd).trim() : null;
+
+  if (!availabilityId && !(slotStart && slotEnd)) {
+    throw new AppError('availabilityId or both slotStart and slotEnd are required', 400, 'VALIDATION_ERROR');
+  }
 
   return {
     projectId: toPositiveInt(body.projectId, 'projectId'),
     executiveId: toPositiveInt(body.executiveId, 'executiveId'),
-    availabilityId: toPositiveInt(body.availabilityId, 'availabilityId'),
+    availabilityId,
+    slotStart: availabilityId ? null : slotStart,
+    slotEnd: availabilityId ? null : slotEnd,
     clientName: String(body.clientName).trim(),
-    clientEmail: normalizedEmail
+    clientEmail: normalizedEmail,
+    clientPhone,
+    clientRut
   };
 }
 

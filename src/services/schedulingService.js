@@ -25,6 +25,17 @@ function toDateWithOffset(daysFromToday) {
   return d;
 }
 
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function assertFutureSlot(startsAt, errorMessage) {
+  if (!startsAt) return;
+  if (new Date(startsAt).getTime() <= Date.now()) {
+    throw new AppError(errorMessage || 'No se permiten horarios pasados o en curso', 400, 'VALIDATION_ERROR');
+  }
+}
+
 function buildDynamicAvailability({ projectId, executive, scheduleRules, dayBlocks, visits, blocks, from, to }) {
   const rulesByWeekday = new Map();
   scheduleRules.forEach((rule) => {
@@ -90,6 +101,10 @@ function buildDynamicAvailability({ projectId, executive, scheduleRules, dayBloc
         const slotEndIso = toIsoDateTime(dateStr, slotEndHHmm);
 
         if (slotStartIso >= from && slotEndIso <= to && !hasCollision(slotStartIso, slotEndIso, blocksInDate)) {
+          if (new Date(slotStartIso).getTime() <= Date.now()) {
+            start += slotMinutes;
+            continue;
+          }
           availability.push({
             id: `dyn-${projectId}-${executive.id}-${slotStartIso}`,
             executive_id: executive.id,
@@ -204,6 +219,8 @@ async function getBlocks(filters) { return repo.listBlocks(filters); }
 
 async function getCalendar(filters) {
   const staticCalendar = await repo.listCalendar(filters);
+  const now = nowIso();
+  staticCalendar.availability = (staticCalendar.availability || []).filter((slot) => slot.slot_start > now);
   if (!filters.projectId) return staticCalendar;
 
   const project = await repo.findProjectById(filters.projectId);
@@ -261,8 +278,34 @@ async function bookVisit(input) {
   if (!executive) throw new AppError('Executive not found', 404, 'NOT_FOUND');
   if (executive.project_id !== input.projectId) throw new AppError('Executive does not belong to project', 400, 'VALIDATION_ERROR');
 
+  assertFutureSlot(input.slotStart, 'No puedes reservar horarios pasados o en curso');
+
+  if (!input.availabilityId && input.slotStart && input.slotEnd) {
+    return repo.inTransaction(async (client) => {
+      const conflict = await repo.findConflictForSlot({ executiveId: input.executiveId, startsAt: input.slotStart, endsAt: input.slotEnd }, client);
+      if (conflict) throw new AppError('Slot is already booked or blocked', 409, 'CONFLICT');
+      const newAvail = await repo.createAvailability({ executiveId: input.executiveId, slotStart: input.slotStart, slotEnd: input.slotEnd, isBooked: 1 }, client);
+      const visitRow = await repo.createVisit({
+        projectId: input.projectId,
+        executiveId: input.executiveId,
+        availabilityId: newAvail.id,
+        clientName: input.clientName,
+        clientEmail: input.clientEmail,
+        clientPhone: input.clientPhone,
+        clientRut: input.clientRut,
+        unitToVisit: null,
+        observation: null,
+        startsAt: input.slotStart,
+        endsAt: input.slotEnd,
+        status: 'booked'
+      }, client);
+      return { visitId: visitRow.id };
+    });
+  }
+
   const slot = await repo.findOpenAvailability(input.availabilityId, input.executiveId);
   if (!slot) throw new AppError('Availability not found or already booked', 404, 'NOT_FOUND');
+  assertFutureSlot(slot.slot_start, 'No puedes reservar horarios pasados o en curso');
 
   return repo.inTransaction(async (client) => {
     const visitRow = await repo.createVisit({
@@ -271,6 +314,8 @@ async function bookVisit(input) {
       availabilityId: input.availabilityId,
       clientName: input.clientName,
       clientEmail: input.clientEmail,
+      clientPhone: input.clientPhone,
+      clientRut: input.clientRut,
       unitToVisit: null,
       observation: null,
       startsAt: slot.slot_start,
@@ -289,6 +334,7 @@ async function rescheduleVisit(input) {
 
   const newSlot = await repo.findOpenAvailability(input.newAvailabilityId, visit.executive_id);
   if (!newSlot) throw new AppError('New availability not found or already booked', 404, 'NOT_FOUND');
+  assertFutureSlot(newSlot.slot_start, 'No puedes reprogramar a un horario pasado o en curso');
 
   return repo.inTransaction(async (client) => {
     await repo.markAvailabilityFree(visit.availability_id, client);
@@ -312,6 +358,8 @@ async function cancelVisit(input) {
 async function setSlotStatus(input) {
   const project = await repo.findProjectById(input.projectId);
   if (!project || project.deleted_at) throw new AppError('Project not found', 404, 'NOT_FOUND');
+
+  assertFutureSlot(input.startsAt, 'No puedes bloquear/desbloquear horarios pasados o en curso');
 
   const executive = await repo.findPrimaryExecutiveByProjectId(input.projectId);
   if (!executive) throw new AppError('No executive assigned to project', 400, 'VALIDATION_ERROR');
@@ -337,6 +385,8 @@ async function setSlotStatus(input) {
           visitId: visitInSlot.id,
           clientName: input.clientName,
           clientEmail: input.clientEmail,
+          clientPhone: input.clientPhone,
+          clientRut: input.clientRut,
           unitToVisit: input.unitToVisit,
           observation: input.observation,
           status: 'booked'
@@ -348,6 +398,8 @@ async function setSlotStatus(input) {
           availabilityId: null,
           clientName: input.clientName,
           clientEmail: input.clientEmail,
+          clientPhone: input.clientPhone,
+          clientRut: input.clientRut,
           unitToVisit: input.unitToVisit,
           observation: input.observation,
           startsAt: input.startsAt,

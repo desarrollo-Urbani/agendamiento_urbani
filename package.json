@@ -1,25 +1,29 @@
-﻿{
-    "name":  "urbani-smart-scheduling",
-    "version":  "1.0.0",
-    "description":  "Urbani Smart Scheduling API",
-    "main":  "src/server.js",
-    "scripts":  {
-                    "db:init":  "node src/db/init.js",
-                    "db:seed":  "node src/db/seed.js",
-                    "start":  "node src/server.js",
-                    "dev":  "npm run dev:stable",
-                    "dev:stable":  "node scripts/dev-stable.js",
-                    "dev:legacy":  "concurrently -n backend,frontend -c blue,green \"npm:start\" \"npm:frontend:dev\"",
-                    "frontend:install":  "npm --prefix frontend install",
-                    "frontend:dev":  "npm --prefix frontend run dev",
-                    "frontend:build":  "npm --prefix frontend run build",
-                    "db:migrate":  "node src/db/migrate_auth_audit.js"
-                },
-    "dependencies":  {
-                         "pg":  "^8.13.3"
-                     },
-    "devDependencies":  {
-                            "concurrently":  "^9.1.2"
-                        },
-    "license":  "MIT"
+{
+    "name": "urbani-smart-scheduling",
+    "version": "1.0.0",
+    "description": "Urbani Smart Scheduling API",
+    "main": "src/server.js",
+    "scripts": {
+        "db:init": "node src/db/init.js",
+        "db:seed": "node src/db/seed.js",
+        "start": "node src/server.js",
+        "dev": "npm run dev:stable",
+        "dev:clean": "node scripts/dev-clean.js",
+        "dev:stable": "node scripts/dev-stable.js",
+        "dev:legacy": "concurrently -n backend,frontend -c blue,green \"npm:start\" \"npm:frontend:dev\"",
+        "frontend:install": "npm --prefix frontend install",
+        "frontend:dev": "npm --prefix frontend run dev",
+        "frontend:build": "npm --prefix frontend run build",
+        "db:migrate": "node src/db/migrate_auth_audit.js",
+        "auth:sync:dry": "node scripts/sync-users-to-supabase-auth.js",
+        "auth:sync:apply": "node scripts/sync-users-to-supabase-auth.js --apply"
+    },
+    "dependencies": {
+        "jose": "^6.2.2",
+        "pg": "^8.13.3"
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.2"
+    },
+    "license": "MIT"
 }

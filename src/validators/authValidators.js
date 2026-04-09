@@ -30,6 +30,12 @@ function validateLoginBody(body) {
   };
 }
 
+function validateEmailOnlyBody(body) {
+  return {
+    email: validateEmail(body && body.email)
+  };
+}
+
 function validateChangePasswordBody(body) {
   return {
     currentPassword: validatePassword(body && body.currentPassword, 'currentPassword'),
@@ -60,6 +66,7 @@ function validateRoleChangeBody(body) {
 
 module.exports = {
   validateLoginBody,
+  validateEmailOnlyBody,
   validateChangePasswordBody,
   validateRequestResetBody,
   validateResetPasswordBody,
