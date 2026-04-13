@@ -3,7 +3,8 @@ const repo = require('../repositories/authRepository');
 const { AppError } = require('../shared/errors');
 const { hashPassword, verifyPassword, randomToken } = require('../shared/security');
 const { verifySupabaseJwt } = require('../shared/supabaseAuth');
-const PROTECTED_ADMIN_EMAIL = 'desarollo@urbani.cl';
+const PROTECTED_ADMIN_EMAIL = 'desarrollo@urbani.cl';
+const ONLY_ALLOWED_EMAIL = String(ENV.onlyAllowedEmail || '').toLowerCase();
 
 function toUserDTO(row) {
   return {
@@ -166,22 +167,25 @@ async function resolveAccessToken(accessToken) {
   const claims = await verifySupabaseJwt(accessToken);
   const email = String(claims.email || '').toLowerCase();
   if (!email) throw new AppError('Token sin email', 401, 'AUTH_INVALID');
+  if (ONLY_ALLOWED_EMAIL && email !== ONLY_ALLOWED_EMAIL) {
+    throw new AppError('Acceso temporal restringido', 403, 'FORBIDDEN');
+  }
 
   let user = await repo.findAnyUserByEmail(email);
   if (!user) {
+    // Primera vez: crear registro local (será desactivado si el sync no lo confirma)
     user = await repo.createUserFromSupabase({
       email,
       displayName: claims.user_metadata && claims.user_metadata.full_name
         ? claims.user_metadata.full_name
         : email
     });
-  } else if (Number(user.is_active) !== 1) {
-    await repo.activateUser(user.id);
-    user = await repo.findUserById(user.id);
   }
 
+  // La fuente de verdad de activación es la BD local (sincronizada diariamente desde Moby).
+  // NO se auto-activa: si is_active=0 el usuario fue deshabilitado en Moby.
   if (!user || Number(user.is_active) !== 1) {
-    throw new AppError('Usuario inactivo', 403, 'USER_INACTIVE');
+    throw new AppError('Usuario no autorizado. Contacta al administrador.', 403, 'USER_INACTIVE');
   }
 
   return {

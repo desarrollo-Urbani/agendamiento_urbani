@@ -27,9 +27,17 @@ const ENV = {
   corsOrigins: process.env.CORS_ORIGINS || '*',
   supabaseUrl: process.env.SUPABASE_URL || '',
   supabaseJwtAudience: process.env.SUPABASE_JWT_AUDIENCE || 'authenticated',
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '',
+  onlyAllowedEmail: String(process.env.ONLY_ALLOWED_EMAIL || 'desarrollo@urbani.cl').trim().toLowerCase(),
   sessionCookieName: process.env.SESSION_COOKIE_NAME || 'urbani_session',
   sessionTtlHours: Number(process.env.SESSION_TTL_HOURS || 24),
-  resetTtlMinutes: Number(process.env.RESET_TTL_MINUTES || 30)
+  resetTtlMinutes: Number(process.env.RESET_TTL_MINUTES || 30),
+  // AWS Moby MySQL replica
+  mobyDbHost: process.env.MOBY_REPLICA_DB_HOST || '',
+  mobyDbPort: Number(process.env.MOBY_REPLICA_DB_PORT || 3306),
+  mobyDbName: process.env.MOBY_REPLICA_DB_NAME || '',
+  mobyDbUser: process.env.MOBY_REPLICA_DB_USER || '',
+  mobyDbPassword: process.env.MOBY_REPLICA_DB_PASSWORD || ''
 };
 
 module.exports = ENV;

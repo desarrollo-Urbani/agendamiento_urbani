@@ -1,13 +1,26 @@
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3100').replace(/\/$/, '');
 
+// Token de Supabase Auth que se inyecta automáticamente en cada request.
+// Se actualiza desde AuthContext cuando la sesión cambia.
+let _bearerToken = null;
+
+export function setAuthToken(token) {
+  _bearerToken = token || null;
+}
+
 export async function api(path, options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+  if (_bearerToken && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${_bearerToken}`;
+  }
+
   const res = await fetch(`${BASE_URL}${path}`, {
     credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {})
-    },
-    ...options
+    ...options,
+    headers
   });
 
   let body = null;

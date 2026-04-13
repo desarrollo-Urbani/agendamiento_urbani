@@ -16,10 +16,13 @@
         "frontend:build": "npm --prefix frontend run build",
         "db:migrate": "node src/db/migrate_auth_audit.js",
         "auth:sync:dry": "node scripts/sync-users-to-supabase-auth.js",
-        "auth:sync:apply": "node scripts/sync-users-to-supabase-auth.js --apply"
+        "auth:sync:apply": "node scripts/sync-users-to-supabase-auth.js --apply",
+        "moby:sync:dry": "node scripts/sync-moby-to-supabase.js",
+        "moby:sync:apply": "node scripts/sync-moby-to-supabase.js --apply"
     },
     "dependencies": {
         "jose": "^6.2.2",
+        "mysql2": "^3.22.0",
         "pg": "^8.13.3"
     },
     "devDependencies": {
