@@ -57,8 +57,21 @@ const server = http.createServer(async (request, response) => {
       return;
     }
 
-    if (request.method === 'GET' && url.pathname === '/health') {
+    if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/health') {
+      if (request.method === 'HEAD') {
+        response.writeHead(200);
+        response.end();
+        return;
+      }
       return sendJson(response, 200, { ok: true, env: ENV.nodeEnv });
+    }
+
+    // Algunos proveedores y monitores consultan HEAD / para health checks.
+    // Responder 200 evita ruido de AUTH_REQUIRED en logs.
+    if (request.method === 'HEAD' && url.pathname === '/') {
+      response.writeHead(200);
+      response.end();
+      return;
     }
 
     const handled = await handleApi(request, response, url);
