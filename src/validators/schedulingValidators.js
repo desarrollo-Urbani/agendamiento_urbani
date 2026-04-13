@@ -286,9 +286,12 @@ function validateProjectStatusBody(body) {
 
 function validateAuditFilters(query) {
   return {
+    projectId: toOptionalPositiveInt(query.projectId, 'projectId'),
     userId: toOptionalPositiveInt(query.userId, 'userId'),
     action: query.action ? String(query.action).trim() : undefined,
     module: query.module ? String(query.module).trim() : undefined,
+    status: query.status ? String(query.status).trim() : undefined,
+    entityType: query.entityType ? String(query.entityType).trim() : undefined,
     from: toOptionalIsoDateTime(query.from, 'from'),
     to: toOptionalIsoDateTime(query.to, 'to'),
     limit: toOptionalPositiveInt(query.limit, 'limit'),

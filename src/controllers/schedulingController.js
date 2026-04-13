@@ -36,6 +36,9 @@ async function getAvailability(query) {
 
 async function getVisits(query) {
   const filters = validators.validateCalendarFilters(query);
+  if (query && query.creatorUserId) {
+    filters.creatorUserId = Number(query.creatorUserId);
+  }
   return service.getVisits(filters);
 }
 
@@ -46,6 +49,9 @@ async function getBlocks(query) {
 
 async function getCalendar(query) {
   const filters = validators.validateCalendarFilters(query);
+  if (query && query.creatorUserId) {
+    filters.creatorUserId = Number(query.creatorUserId);
+  }
   return service.getCalendar(filters);
 }
 
@@ -69,6 +75,14 @@ async function setSlotStatus(body) {
   return service.setSlotStatus(input);
 }
 
+async function getMyTodayVisitsSummary(currentUser) {
+  return service.getMyTodayVisitsSummary(currentUser);
+}
+
+async function canUserManageVisit(visitId, userId) {
+  return service.canUserManageVisit(visitId, userId);
+}
+
 module.exports = {
   getProjects,
   createProject,
@@ -83,5 +97,7 @@ module.exports = {
   bookVisit,
   rescheduleVisit,
   cancelVisit,
-  setSlotStatus
+  setSlotStatus,
+  getMyTodayVisitsSummary,
+  canUserManageVisit
 };

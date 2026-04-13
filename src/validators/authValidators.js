@@ -58,7 +58,7 @@ function validateResetPasswordBody(body) {
 
 function validateRoleChangeBody(body) {
   const role = mustString(body && body.role, 'role').toLowerCase();
-  if (!['admin', 'executive'].includes(role)) {
+  if (!['admin', 'usuario', 'lector', 'executive'].includes(role)) {
     throw new AppError('role invalido', 400, 'VALIDATION_ERROR');
   }
   return { role };

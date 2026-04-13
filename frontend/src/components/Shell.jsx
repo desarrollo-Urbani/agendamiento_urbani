@@ -2,15 +2,30 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useAuth } from '../auth/AuthContext';
+import { api } from '../lib/api';
 
 export default function Shell({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [todayVisits, setTodayVisits] = useState(null);
   const location = useLocation();
   const { user, logout } = useAuth();
 
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!user) return;
+    const loadTodayVisits = async () => {
+      try {
+        const data = await api('/api/me/today-visits');
+        setTodayVisits(data);
+      } catch (_) {
+        setTodayVisits(null);
+      }
+    };
+    loadTodayVisits();
+  }, [user, location.pathname]);
 
   return (
     <div className="app-shell bg-surface min-h-screen">
@@ -62,6 +77,18 @@ export default function Shell({ children }) {
         </header>
 
         <main className="flex-1 p-4 md:p-6 lg:p-8 bg-surface">
+          {todayVisits && (
+            <div className="mb-5 rounded-xl border border-[#dfe8ff] bg-[#eef3ff] px-4 py-3 flex items-center gap-3">
+              <span className="material-symbols-outlined text-secondary" style={{ fontSize: 20 }}>event_upcoming</span>
+              <div>
+                <p className="text-sm font-semibold text-primary-container">Visitas de hoy</p>
+                <p className="text-xs text-on-surface-variant">
+                  Tienes <strong>{todayVisits.totalToday}</strong> visitas agendadas hoy
+                  {todayVisits.projectId ? ` para tu proyecto #${todayVisits.projectId}.` : '.'}
+                </p>
+              </div>
+            </div>
+          )}
           {children}
         </main>
       </div>

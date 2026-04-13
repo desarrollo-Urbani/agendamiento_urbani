@@ -75,7 +75,67 @@ async function listProjectAuditLogs(projectId, filters) {
   }));
 }
 
+async function listAuditLogs(filters) {
+  const params = [];
+  const where = ['1 = 1'];
+
+  if (filters.projectId) {
+    params.push(filters.projectId);
+    where.push(`al.project_id = $${params.length}`);
+  }
+  if (filters.userId) {
+    params.push(filters.userId);
+    where.push(`al.user_id = $${params.length}`);
+  }
+  if (filters.action) {
+    params.push(filters.action);
+    where.push(`al.action = $${params.length}`);
+  }
+  if (filters.module) {
+    params.push(filters.module);
+    where.push(`al.module = $${params.length}`);
+  }
+  if (filters.status) {
+    params.push(filters.status);
+    where.push(`al.status = $${params.length}`);
+  }
+  if (filters.entityType) {
+    params.push(filters.entityType);
+    where.push(`al.entity_type = $${params.length}`);
+  }
+  if (filters.from) {
+    params.push(filters.from);
+    where.push(`al.created_at >= $${params.length}`);
+  }
+  if (filters.to) {
+    params.push(filters.to);
+    where.push(`al.created_at <= $${params.length}`);
+  }
+
+  const limit = Math.min(Number(filters.limit || 100), 300);
+  const offset = Math.max(Number(filters.offset || 0), 0);
+  params.push(limit);
+  params.push(offset);
+
+  const { rows } = await q(
+    `SELECT al.*, u.email AS user_email, u.display_name
+     FROM audit_logs al
+     LEFT JOIN users u ON u.id = al.user_id
+     WHERE ${where.join(' AND ')}
+     ORDER BY al.created_at DESC
+     LIMIT $${params.length - 1} OFFSET $${params.length}`,
+    params
+  );
+
+  return rows.map((r) => ({
+    ...r,
+    old_values: r.old_values ? JSON.parse(r.old_values) : null,
+    new_values: r.new_values ? JSON.parse(r.new_values) : null
+  }));
+}
+
 module.exports = {
   createAuditLog,
-  listProjectAuditLogs
+  listProjectAuditLogs,
+  listAuditLogs
 };

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api';
+import { useAuth } from '../auth/AuthContext';
 
 const STATUS_STYLES = {
   booked: 'bg-[#e8f0fe] text-secondary',
@@ -14,11 +15,32 @@ function getEstadoLabel(status) {
 }
 
 export default function LeadsPage() {
+  const { user } = useAuth();
   const [visits, setVisits] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [projectId, setProjectId] = useState('');
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('all');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const normalizedRole = String(user?.role || '').toLowerCase() === 'executive'
+    ? 'usuario'
+    : String(user?.role || '').toLowerCase();
+  const isLector = normalizedRole === 'lector';
+
+  const loadProjects = async () => {
+    try {
+      const data = await api('/api/projects');
+      const arr = Array.isArray(data) ? data : [];
+      setProjects(arr);
+      if (isLector && !projectId && arr[0]) {
+        setProjectId(String(arr[0].id));
+      }
+    } catch (_) {
+      setProjects([]);
+    }
+  };
 
   const loadVisits = async () => {
     setLoading(true);
@@ -26,7 +48,17 @@ export default function LeadsPage() {
     try {
       const from = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
       const to = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
-      const data = await api(`/api/visits?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+      const qs = new URLSearchParams({
+        from,
+        to
+      });
+      if (projectId) qs.set('projectId', projectId);
+      if (isLector && !projectId) {
+        setError('Debes seleccionar un proyecto para ver las citas.');
+        setVisits([]);
+        return;
+      }
+      const data = await api(`/api/visits?${qs.toString()}`);
       setVisits(data);
     } catch (loadError) {
       setError(loadError.message);
@@ -36,8 +68,12 @@ export default function LeadsPage() {
   };
 
   useEffect(() => {
-    loadVisits();
+    loadProjects();
   }, []);
+
+  useEffect(() => {
+    loadVisits();
+  }, [projectId, isLector]);
 
   const filtered = useMemo(() => {
     return visits.filter((v) => {
@@ -67,11 +103,21 @@ export default function LeadsPage() {
 
       <section className="bg-surface-container-lowest rounded-xl shadow-surface p-4 md:p-5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <select
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className="bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm"
+          >
+            {!isLector && <option value="">Todos los proyectos</option>}
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>#{p.id} {p.name}</option>
+            ))}
+          </select>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por cliente, proyecto o ejecutivo"
-            className="md:col-span-2 bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm"
+            className="bg-surface-container-low border-none rounded-md px-3 py-2.5 text-sm"
           />
           <select
             value={status}

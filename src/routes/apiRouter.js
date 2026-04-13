@@ -2,6 +2,7 @@
 const authController = require('../controllers/authController');
 const authService = require('../services/authService');
 const auditService = require('../services/auditService');
+const supabaseAdminService = require('../services/supabaseAdminService');
 const validators = require('../validators/schedulingValidators');
 const ENV = require('../config/env');
 const { sendJson, readJsonBody, parseQuery } = require('../shared/http');
@@ -50,11 +51,28 @@ function requireAdmin(context) {
   }
 }
 
+function normalizedRole(user) {
+  if (!user || !user.role) return null;
+  const role = String(user.role).toLowerCase();
+  if (role === 'executive') return 'usuario';
+  return role;
+}
+
+function requireRoles(context, allowedRoles) {
+  requireAuth(context);
+  const role = normalizedRole(context.user);
+  if (!allowedRoles.includes(role)) {
+    throw new AppError('No tienes permisos para esta accion', 403, 'FORBIDDEN');
+  }
+}
+
 async function handleApi(request, response, url) {
   const projectMatch = url.pathname.match(/^\/api\/projects\/(\d+)$/);
   const projectStatusMatch = url.pathname.match(/^\/api\/projects\/(\d+)\/status$/);
   const projectHistoryMatch = url.pathname.match(/^\/api\/projects\/(\d+)\/history$/);
   const adminUserRoleMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/role$/);
+  const adminSupabaseUserMatch = url.pathname.match(/^\/api\/admin\/supabase-users\/([^/]+)$/);
+  const adminSupabaseUserPasswordMatch = url.pathname.match(/^\/api\/admin\/supabase-users\/([^/]+)\/password$/);
 
   const context = await buildContext(request);
 
@@ -214,14 +232,109 @@ async function handleApi(request, response, url) {
     return sendJson(response, 200, result);
   }
 
+  if (request.method === 'GET' && url.pathname === '/api/admin/supabase-users') {
+    requireAdmin(context);
+    const users = await supabaseAdminService.listUsers();
+    return sendJson(response, 200, users);
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/admin/supabase-users') {
+    requireAdmin(context);
+    const body = await readJsonBody(request);
+    const email = String(body && body.email ? body.email : '').trim().toLowerCase();
+    const password = String(body && body.password ? body.password : '');
+    const displayName = String(body && body.displayName ? body.displayName : '').trim();
+    const role = String(body && body.role ? body.role : 'executive').trim().toLowerCase();
+    if (!['admin', 'usuario', 'lector', 'executive'].includes(role)) {
+      throw new AppError('Rol invalido', 400, 'VALIDATION_ERROR');
+    }
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new AppError('Email invalido', 400, 'VALIDATION_ERROR');
+    }
+    if (password.length < 8) {
+      throw new AppError('La contrasena debe tener al menos 8 caracteres', 400, 'VALIDATION_ERROR');
+    }
+
+    const created = await supabaseAdminService.createUser({
+      email,
+      password,
+      displayName: displayName || email,
+      role
+    });
+
+    await auditService.logAudit({
+      userId: context.user.id,
+      action: 'create_supabase_user',
+      module: 'auth',
+      entityType: 'user',
+      entityId: created.id,
+      description: `Usuario Supabase creado: ${created.email}`,
+      newValues: { email: created.email, role: created.role },
+      status: 'success',
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent
+    });
+
+    return sendJson(response, 201, created);
+  }
+
+  if (request.method === 'DELETE' && adminSupabaseUserMatch) {
+    requireAdmin(context);
+    const userId = decodeURIComponent(adminSupabaseUserMatch[1]);
+    await supabaseAdminService.deleteUserById(userId);
+
+    await auditService.logAudit({
+      userId: context.user.id,
+      action: 'delete_supabase_user',
+      module: 'auth',
+      entityType: 'user',
+      entityId: userId,
+      description: `Usuario Supabase eliminado: ${userId}`,
+      status: 'success',
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent
+    });
+
+    return sendJson(response, 200, { success: true });
+  }
+
+  if (request.method === 'POST' && adminSupabaseUserPasswordMatch) {
+    requireAdmin(context);
+    const userId = decodeURIComponent(adminSupabaseUserPasswordMatch[1]);
+    const body = await readJsonBody(request);
+    const password = String(body && body.password ? body.password : '');
+    if (password.length < 8) {
+      throw new AppError('La contrasena debe tener al menos 8 caracteres', 400, 'VALIDATION_ERROR');
+    }
+
+    await supabaseAdminService.updateUserPassword(userId, password);
+
+    await auditService.logAudit({
+      userId: context.user.id,
+      action: 'update_supabase_password',
+      module: 'auth',
+      entityType: 'user',
+      entityId: userId,
+      description: `Contrasena actualizada en Supabase para ${userId}`,
+      status: 'success',
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent
+    });
+
+    return sendJson(response, 200, { success: true });
+  }
+
   // Private API below
   requireAuth(context);
 
   if (request.method === 'GET' && url.pathname === '/api/projects') {
+    requireRoles(context, ['admin', 'usuario', 'lector']);
     return sendJson(response, 200, await controller.getProjects());
   }
 
   if (request.method === 'POST' && url.pathname === '/api/projects') {
+    requireAdmin(context);
     const body = await readJsonBody(request);
     const result = await controller.createProject(body);
 
@@ -243,6 +356,7 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'PUT' && projectMatch) {
+    requireAdmin(context);
     const body = await readJsonBody(request);
     const projectId = Number(projectMatch[1]);
     const result = await controller.updateProject(projectId, body);
@@ -265,6 +379,7 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'PATCH' && projectStatusMatch) {
+    requireAdmin(context);
     const projectId = Number(projectStatusMatch[1]);
     const body = await readJsonBody(request);
     const result = await controller.changeProjectStatus(projectId, body);
@@ -287,6 +402,7 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'DELETE' && projectMatch) {
+    requireAdmin(context);
     const projectId = Number(projectMatch[1]);
     const result = await controller.deleteProject(projectId);
 
@@ -313,24 +429,95 @@ async function handleApi(request, response, url) {
     return sendJson(response, 200, history);
   }
 
+  if (request.method === 'GET' && url.pathname === '/api/logs') {
+    requireRoles(context, ['admin', 'usuario']);
+    const filters = validators.validateAuditFilters(parseQuery(url));
+    // Si no es admin, solo ve sus propios eventos.
+    if (normalizedRole(context.user) !== 'admin') {
+      filters.userId = context.user.id;
+    }
+    const rows = await auditService.getAuditLogs(filters);
+    return sendJson(response, 200, rows);
+  }
+
   if (request.method === 'GET' && url.pathname === '/api/executives') {
+    requireRoles(context, ['admin', 'usuario', 'lector']);
     return sendJson(response, 200, await controller.getExecutives(parseQuery(url)));
   }
 
   if (request.method === 'GET' && url.pathname === '/api/availability') {
+    requireRoles(context, ['admin', 'usuario', 'lector']);
     return sendJson(response, 200, await controller.getAvailability(parseQuery(url)));
   }
 
   if (request.method === 'GET' && url.pathname === '/api/visits') {
-    return sendJson(response, 200, await controller.getVisits(parseQuery(url)));
+    requireRoles(context, ['admin', 'usuario', 'lector']);
+    const filters = parseQuery(url);
+    const role = normalizedRole(context.user);
+    if (role === 'usuario') {
+      filters.creatorUserId = context.user.id;
+    }
+    if (role === 'lector' && !filters.projectId) {
+      throw new AppError('Debes seleccionar un proyecto para consultar citas', 400, 'VALIDATION_ERROR');
+    }
+    return sendJson(response, 200, await controller.getVisits(filters));
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/me/today-visits') {
+    const summary = await controller.getMyTodayVisitsSummary(context.user);
+    await auditService.logAudit({
+      projectId: summary.projectId,
+      userId: context.user.id,
+      action: 'view_today_visits_summary',
+      module: 'dashboard',
+      entityType: 'visit',
+      entityId: String(summary.date),
+      description: 'Consulta de alerta superior de visitas del dia',
+      newValues: summary,
+      status: 'success',
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent
+    });
+    return sendJson(response, 200, summary);
   }
 
   if (request.method === 'GET' && url.pathname === '/api/blocks') {
+    requireRoles(context, ['admin', 'usuario', 'lector']);
     return sendJson(response, 200, await controller.getBlocks(parseQuery(url)));
   }
 
   if (request.method === 'GET' && url.pathname === '/api/calendar') {
-    return sendJson(response, 200, await controller.getCalendar(parseQuery(url)));
+    requireRoles(context, ['admin', 'usuario', 'lector']);
+    const query = parseQuery(url);
+    const role = normalizedRole(context.user);
+    if (role === 'usuario') {
+      query.creatorUserId = context.user.id;
+    }
+    if (role === 'lector' && !query.projectId) {
+      throw new AppError('Debes seleccionar un proyecto para consultar calendario', 400, 'VALIDATION_ERROR');
+    }
+    const calendar = await controller.getCalendar(query);
+    await auditService.logAudit({
+      projectId: query.projectId ? Number(query.projectId) : null,
+      userId: context.user.id,
+      action: 'view_calendar_states',
+      module: 'calendar',
+      entityType: 'state',
+      entityId: query.projectId || 'all-projects',
+      description: 'Consulta de estados del calendario',
+      newValues: {
+        projectId: query.projectId || null,
+        from: query.from || null,
+        to: query.to || null,
+        availabilityCount: calendar.availability.length,
+        visitsCount: calendar.visits.length,
+        blockedCount: calendar.blocks.length
+      },
+      status: 'success',
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent
+    });
+    return sendJson(response, 200, calendar);
   }
 
   if (request.method === 'POST' && url.pathname === '/api/calendar/slot-status') {
@@ -356,6 +543,7 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'POST' && url.pathname === '/api/book') {
+    requireRoles(context, ['admin', 'usuario']);
     const body = await readJsonBody(request);
     const result = await controller.bookVisit(body);
 
@@ -377,7 +565,14 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'PUT' && url.pathname === '/api/reschedule') {
+    requireRoles(context, ['admin', 'usuario']);
     const body = await readJsonBody(request);
+    if (normalizedRole(context.user) === 'usuario') {
+      const canManage = await controller.canUserManageVisit(body.visitId, context.user.id);
+      if (!canManage) {
+        throw new AppError('Solo puedes reprogramar citas creadas por tu usuario', 403, 'FORBIDDEN');
+      }
+    }
     const result = await controller.rescheduleVisit(body);
 
     await auditService.logAudit({
@@ -387,6 +582,7 @@ async function handleApi(request, response, url) {
       entityType: 'visit',
       entityId: body.visitId,
       description: `Reprogramacion de visita #${body.visitId}`,
+      oldValues: { visitId: body.visitId, previousAvailabilityId: body.previousAvailabilityId || null },
       newValues: body,
       status: 'success',
       ipAddress: context.ipAddress,
@@ -397,7 +593,14 @@ async function handleApi(request, response, url) {
   }
 
   if (request.method === 'DELETE' && url.pathname === '/api/cancel') {
+    requireRoles(context, ['admin', 'usuario']);
     const body = await readJsonBody(request);
+    if (normalizedRole(context.user) === 'usuario') {
+      const canManage = await controller.canUserManageVisit(body.visitId, context.user.id);
+      if (!canManage) {
+        throw new AppError('Solo puedes cancelar citas creadas por tu usuario', 403, 'FORBIDDEN');
+      }
+    }
     const result = await controller.cancelVisit(body);
 
     await auditService.logAudit({
@@ -407,6 +610,7 @@ async function handleApi(request, response, url) {
       entityType: 'visit',
       entityId: body.visitId,
       description: `Cancelacion de visita #${body.visitId}`,
+      oldValues: { visitId: body.visitId, status: 'booked' },
       newValues: body,
       status: 'success',
       ipAddress: context.ipAddress,

@@ -5,13 +5,35 @@ const items = [
   { to: '/catalogo', label: 'Inventario', icon: 'real_estate_agent' },
   { to: '/calendario', label: 'Calendario', icon: 'calendar_month' },
   { to: '/citas', label: 'Citas', icon: 'leaderboard' },
+  { to: '/logs', label: 'Logs', icon: 'history' },
   { to: '/cambiar-contrasena', label: 'Contrasena', icon: 'lock' },
 ];
 
+function normalizeRole(role) {
+  const raw = String(role || '').toLowerCase();
+  if (raw === 'executive') return 'usuario';
+  return raw;
+}
+
 export default function Sidebar({ isOpen = false, onClose = () => {}, user = null }) {
-  const navItems = user?.role === 'admin'
-    ? [...items, { to: '/administradores', label: 'Administradores', icon: 'admin_panel_settings' }]
-    : items;
+  const role = normalizeRole(user?.role);
+
+  let navItems = [];
+  if (role === 'admin') {
+    navItems = [...items, { to: '/administradores', label: 'Administradores', icon: 'admin_panel_settings' }, { to: '/auth-supabase', label: 'Auth Supabase', icon: 'manage_accounts' }];
+  } else if (role === 'usuario') {
+    navItems = [
+      { to: '/dashboard', label: 'Panel', icon: 'dashboard' },
+      { to: '/calendario', label: 'Calendario', icon: 'calendar_month' },
+      { to: '/citas', label: 'Citas', icon: 'leaderboard' },
+      { to: '/logs', label: 'Logs', icon: 'history' }
+    ];
+  } else if (role === 'lector') {
+    navItems = [
+      { to: '/calendario', label: 'Calendario', icon: 'calendar_month' },
+      { to: '/citas', label: 'Citas', icon: 'leaderboard' }
+    ];
+  }
 
   return (
     <aside

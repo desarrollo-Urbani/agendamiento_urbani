@@ -428,6 +428,31 @@ async function setSlotStatus(input) {
   });
 }
 
+async function getMyTodayVisitsSummary(currentUser) {
+  if (!currentUser || !currentUser.executiveId) {
+    return { totalToday: 0, date: isoDate(new Date()), projectId: currentUser ? currentUser.projectId || null : null };
+  }
+  const today = isoDate(new Date());
+  const from = `${today}T00:00:00`;
+  const to = `${today}T23:59:59`;
+  const totalToday = await repo.countBookedVisitsForExecutiveByRange({
+    executiveId: Number(currentUser.executiveId),
+    projectId: currentUser.projectId ? Number(currentUser.projectId) : null,
+    from,
+    to
+  });
+  return {
+    totalToday,
+    date: today,
+    projectId: currentUser.projectId || null
+  };
+}
+
+async function canUserManageVisit(visitId, userId) {
+  if (!visitId || !userId) return false;
+  return repo.wasVisitCreatedByUser(Number(visitId), Number(userId));
+}
+
 module.exports = {
   getProjects,
   createProject,
@@ -442,5 +467,7 @@ module.exports = {
   bookVisit,
   rescheduleVisit,
   cancelVisit,
-  setSlotStatus
+  setSlotStatus,
+  getMyTodayVisitsSummary,
+  canUserManageVisit
 };

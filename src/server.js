@@ -49,7 +49,7 @@ const server = http.createServer(async (request, response) => {
       return;
     }
 
-    const frontendRoutes = new Set(['/', '/login', '/restablecer-contrasena', '/dashboard', '/catalogo', '/calendario', '/citas', '/cambiar-contrasena', '/administradores']);
+    const frontendRoutes = new Set(['/', '/login', '/restablecer-contrasena', '/dashboard', '/catalogo', '/calendario', '/citas', '/cambiar-contrasena', '/administradores', '/logs', '/auth-supabase']);
 
     if (request.method === 'GET' && (url.pathname === '/confirmacion' || url.pathname === '/formulario')) {
       response.writeHead(302, { Location: '/calendario' });
@@ -167,5 +167,5 @@ function listenWithFallback(basePort, maxAttempts = 10) {
 listenWithFallback(ENV.port);
 
 authService.ensureDefaultAdmin()
-  .then(() => logger.info('Default admin ensured', { email: 'desarollo@urbani.cl' }))
+  .then(() => logger.info('Default admin ensured', { email: 'desarrollo@urbani.cl' }))
   .catch((error) => logger.error('Failed to ensure default admin', { message: error.message }));

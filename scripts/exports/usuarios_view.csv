@@ -1,0 +1,283 @@
+ID_USUARIO,NOMBRE_USUARIO,RUT,NOMBRE,APELLIDO,EMAIL,TELEFONO,HORARIO_ATENCION,ACTIVO,NOMBRE_PERFIL
+1,dopazo,,Soporte,MobySuite,notificaciones@mobysuite.com,,,1,Broker externo
+4,brabanales,,Test,Test,test@test.cl,,,0,Ejecutivo de ventas
+5,testing,,Soporte,MobySuite2,juan@mobysuite.com,+56942810004,,0,Ejecutivo de ventas
+6,jpasten,,Joselyn,Pastén,jpasten@urbani.cl,56935310944,,0,Administrador
+7,mplillo,,María Paz,Lillo,mplillo@urbani.cl,+56972970067,,0,Administrador
+8,eflores,,ESCARLET,FLORES,eflores@urbani.cl,+56961573617,,1,Ejecutivo de ventas
+9,ccampos,,CONSTANZA,CAMPOS,ccampos@urbani.cl,+56993377011,,0,Ejecutivo de ventas
+10,agallegos,,ANGELA,GALLEGOS,agallegos@urbani.cl,+56939148737,,1,Ejecutivo de ventas
+11,mmunoz,,MARIEL,MUÑOZ,mmunoz@urbani.cl,+56996306072,,1,Ejecutivo de ventas
+12,csantander,18745318-6,CRISTIAN,SANTANDER,csantander@urbani.cl,56933319798,,0,Administrador
+13,poyarce,,PATRICIA,OYARCE,poyarce@urbani.cl,+56961573609,,1,Escrituracion
+14,pjara,,Paulina,Jara,pjara@urbani.cl,56940463055,,0,Escrituracion
+15,gzambrano,,Gonzalo,Zambrano,gzambrano@urbani.cl,56992293809,,0,Administrador
+16,erojas,,Esteban,Rojas,erojas@urbani.cl,,,0,Ejecutivo Trainee
+17,lhormazabal,,Liliana,Hormazábal,lhormazabal@urbani.cl,56962149387,,0,Subgerente de Transformación y Experiencia Clientes
+18,gbasualto,,Germán,Basualto,gbasualto@urbani.cl,56967114514,,1,Gerente de ventas
+19,gtorres,,Guillermo,Torres,gtorres@constructoragarcia.cl,56998186608,,1,Gerente de ventas
+20,agutierrez,,Ataly,Gutiérrez,agutierrez@urbani.cl,56939526842,,0,Ejecutivo Trainee
+21,fbrain,,Fernando,Brain,fbrain@urbani.cl,56998959506,,0,Ejecutivo Trainee
+22,dinostroza,,DAYHANN,INOSTROZA,dinostroza@urbani.cl,,,1,Administrador
+23,mpulgar,,Matias,Pulgar,mpulgar@urbani.cl,56943429885,,0,Ejecutivo Trainee
+24,paroca,,Pedro,Aroca,paroca@urbani.cl,971214411,,0,Ejecutivo de ventas
+25,rbustos,,Roxana,Bustos,rbustos@urbani.cl,971214199,,0,Ejecutivo de ventas
+26,cgallegos,,Camila ,Gallegos,cgallegos@urbani.cl,979828413,,0,Ejecutivo de ventas
+27,erojasg1,,Esteban,Rojas,stbn.w.rg@gmail.com,+56962835430,,0,Ejecutivo Trainee
+28,cgallegos1,,Camila ,Gallegos,cgallegos@urbani.cl,979828413,,0,Ejecutivo de ventas
+29,gdisalvo,,Gina,Di Salvo,gdisalvo@urbani.cl,979351263,,0,Ejecutivo Trainee
+30,centralizador_urbani,,Centralizador,Urbani,urbani@mobysuite.cl,34934290,,1,Sistema
+31,testmoby,,test,Mobysuite,rosario@mobysuite.com,,,0,Ejecutivo de ventas
+32,cmontoya1,,Catalina,Montoya,erojasg2@urbani.cl,,,0,Ejecutivo de ventas
+33,cbasualto,,Claudio ,Basualto,cbasualto@urbani.cl,56990797572,,1,Director
+34,cmontoya,,Catalina ,Montoya,cmontoya@urbani.cl,56971214470,,0,Ejecutivo de ventas
+36,carancibia,,Camila,Arancibia Cruz,carancibia@urbani.cl,+56976256561,,0,CONTAC CENTER
+37,klohse,,Kurt,Lohse,klohse@urbani.cl,+56999911449,,0,Gerente Integral
+38,pmendez,18230464-6,Pablo,Méndez Rodríguez,pmendez@urbani.cl,+56 9 6483 4989,,0,Ejecutivo Trainee
+39,Licanco,,Licanco,Urbani,,,,0,Ejecutivo de ventas
+40,rcarrasco,,Rodrigo ,Carrascro  Spano ,rcarrasco@urbani.cl,,,0,Subgerente de Ventas Urbani
+41,fcastillo,17046468-0,FRANCISCO,CASTILLO,fcastillo@urbani.cl,+56939526843,,1,ADMIN 2
+42,armando,,Armando,Armando,armando@mobysuite.com,,,0,Subgerente de Ventas Urbani
+43,caraya,18464637-4,Claudio,Araya Araya,practicacontroldegestion@urbani.cl,966465975,,0,Administrador
+44,eperez,15592359-8,Elizabeth ,Perez Espinoza,vperez.urbani@gmail.com,,,0,Ejecutivo de ventas
+45,kmellado,15810663-9,KAREN,MELLADO,kmellado@urbani.cl,971214411,,0,Ejecutivo de ventas
+46,Silvia,,Silvia ,Araya,saraya@urbani.cl,56939526843,,0,Ejecutivo de ventas
+47,aperez,14102805-7,Alejandra,Perez,aperez@urbani.cl,+56934212728,,1,Contabilidad
+48,esanzana,,Elizabeth,Sanzana,esanzana@constructoragarcia.cl,045 -2 377712,,1,CJMG
+50,despinoza,,Denisse,Espinoza ,despinoza@constructoragarcia.cl,,,1,CJMG
+51,respinoza,,Ruth,Espinoza,respinoza@constructoragarcia.cl,,,1,CJMG
+52,aespinoza,,Alfredo,Espinoza,aespinoza@constructoragarcia.cl,,,1,CJMG
+53,testcontabilidad,,Test ,contable,notificaciones@mobysuite.com,,,0,Broker externo
+55,Cotizador Web,,Cotizador,Web,,,,1,Ejecutivo de ventas
+57,jmgarcia,,José Miguel,García,jmgarcia@constructoragarcia.cl,,,0,Gerente de Ventas
+58,kotarola,18345341-6,Katherine ,Otarola,kotarola@urbani.cl,944825135,,0,Ejecutivo de ventas
+59,bvicencio,17920789-3,Bárbara,Vicencio Erices,bvicencio@urbani.cl,974936318,,0,Administrador
+60,cscherer,,Christopher,Scherer,cscherer@urbani.cl,+56942656838,,0,Ejecutivo de ventas
+61,ealbornoz,14090294-2,EVELYN,ALBORNOZ,ealbornoz@urbani.cl,+56975198629,,0,Ejecutivo de ventas
+62,mariletest,24.073.028-6,Prueba Mobysuite,Test,marile@mobysuite.com,,,0,Ejecutivo de ventas
+63,vbasualto,18145641-8,VALENTINA,BASUALTO,vbasualto@urbani.cl,56990526225,,0,Periodista
+64,clatorre,13257514-2,Carolina,Latorre,clatorre@urbani.cl,+56986911018,,0,Jefe de Proyectos Propios
+65,mtoloza,20254475-4,Mariana,Toloza Reyes,mtoloza@urbani.cl,+56991084625,,0,Administrador
+66,mgonzalez,8372739-k,MYRNA,GONZALEZ,mgonzalez@urbani.cl,56938754019,,0,Ejecutivo de ventas
+67,pscheel,15172875-8,Pamela,Scheel,pscheel@urbani.cl,+56966378257,,0,Subgerente de Ventas Urbani
+68,dcarrasco,20258581-7,DIEGO,CARRASCO,dcarrasco@urbani.cl,+56976655334,,0,Administrador
+69,melizalde,13137651-0,CAROLINA,ELIZALDE,melizalde@urbani.cl,+56934680930,,0,Ejecutivo de ventas
+70,mquezada,15220723-9,MACARENA,QUEZADA,mquezada@urbani.cl,+56976690611,,0,Ejecutivo de ventas
+71,cchaparro@urbani.cl,16817834-4,Carla,Chaparro Zenteno,cchaparro@urbani.cl,+56979904077,,0,Ejecutivo de ventas
+72,yderikha,20681333-4,Youseff,Derikha,yderikma@urbani.cl,+56954641952,,0,Práctica de Escrituración
+73,jburgos,19600376-2,JAVIERA ,BURGOS CARCAMO,jburgos@urbani.cl,971214470,<br>,0,Ejecutivo de ventas
+74,jvega,13389521-3,JORGE,VEGA,jvega@urbani.cl,971214411,,0,Ejecutivo de ventas
+75,vambiado,19594807-0,Valentina,Ambiado,vambiado@urbani.cl,+56934219725,,1,Administrador
+76,tessi,76382907-3,Tessi,Empresa,csantander.urbani@gmail.com,,,0,Empresa Externa
+77,fadams,19836605-6,Francisca Adams,Amigo Grandon,fadams@urbani.cl,+56932078279,,1,Contabilidad
+78,navendano,19798722-7,Nicolás,Avendaño,navendano@urbani.cl,+56983944361,,0,Administrador
+79,cgodoy,20112145-0,CAMILA,GODOY,cgodoy@urbani.cl,+56953206666,,0,Ejecutivo de ventas
+80,jgonzalez,19286947-1,JAVIERA,GONZALEZ,jgonzalez@urbani.cl,+56971214470,,0,Ejecutivo de ventas
+81,arojas,15781110-K,ÁLVARO,ROJAS,arojas@urbani.cl,+56931926030,,0,Ejecutivo de ventas
+82,jsarmiento,18372665-k,JOSEPH,SARMIENTO,jsarmiento@urbani.cl,+56934680930,,0,Asistente de gestión comercial
+83,pgarcia,18404649-0,PABLO,GARCÍA,pgarcia@urbani.cl,+56958110961,,0,Administrador
+84,psilva,17206608-9,PAMELA,SILVA,psilva@urbani.cl,+56982311678,,0,Ejecutivo de ventas
+85,cvera,18143408-2,CAMILA,VERA,cvera@urbani.cl,+56949720629,,0,Ejecutivo de ventas
+86,adiaz,24717406-0,ARIANA,DÍAZ,adiaz@urbani.cl,+56998251918,,0,Ejecutivo de ventas
+87,agomez,26169191-4,ARIALA,GOMEZ,agomez@urbani.cl,+56974811242,,0,Ejecutivo de ventas
+88,vsharp,16139364-9,VICTOR,SHARP,vsharp@urbani.cl,+56966114293,,0,Ejecutivo de ventas
+89,maraya,15863316-2,MAURICIO,ARAYA,maraya@urbani.cl,+56991574834,,0,Subgerente de Ventas Urbani
+90,kcruces,13134302-7,KARIN,CRUCES,kcruces@urbani.cl,+56988089999,,0,Subgerente de Ventas Urbani
+91,eurra,18108771-4,EXEQUIEL,URRA,eurra@urbani.cl,+56989629866,,0,Ejecutivo de ventas
+92,areyes,24857512-3,ANDREA,REYES,areyes@urbani.cl,+56934680929,,0,Ejecutivo de ventas
+93,lquinones,18420568-8,LAURA,QUIÑONES,lquinones@urbani.cl,+56931926030,,1,Ejecutivo de ventas
+94,varias,12070160-6,VIVIAN,ARIAS,varias@urbani.cl,+56933801934,,1,Ejecutivo de ventas
+95,fulloa,17842585-4,FERNANDA,ULLOA,fulloa@urbani.cl,+56940463055,,1,Administrador
+96,jortiz,12976252-7,JULIA,ORTIZ,jortiz@urbani.cl,+56978789077,,0,Subgerente de Ventas Urbani
+97,mamigo,18962044-6,MANUEL,AMIGO,mamigo@urbani.cl,+56986920635,,0,Ejecutivo de ventas
+98,iparra,17955660-k,IGNACIO,PARRA,iparra@urbani.cl,+56998251449,,0,Ejecutivo de ventas
+99,preyes,16736853-0,PATRICIA,REYES,preyes@urbani.cl,+56942656838,,0,Ejecutivo de ventas
+100,squiroz,17347804-6,SEBASTIAN,QUIROZ,squiroz@urbani.cl,+56988937236,,1,Administrador
+101,khohf,20018479-3,KARIN,HOHF,khohf@urbani.cl,56995172624,,0,CONTAC CENTER
+102,fsenociain,17346287-5,FRANCISCA,SENOCIAIN,fsenociain@urbani.cl,+56942656772,,0,CONTAC CENTER
+103,bsepulveda,20258035-1,BENJAMÍN,SEPÚLVEDA,bsepulveda@urbani.cl,+56940463055,,0,Administrador
+104,econtreras,17224654-0,ESCARLET,CONTRERAS,econtreras@urbani.cl,+56933801897,,1,Administrador
+105,fgarcia,18446639-2,FELIPE,GARCÍA,fgarcia@urbani.cl,+56939120842,,0,Ejecutivo de ventas
+106,ageneral,17615611-2,AUGUSTO,GENERAL,ageneral@urbani.cl,+56964528806,,1,Administrador s/reportes
+107,agiacaman,19596906-k,ANTONIA,GIACAMAN,agiacaman@urbani.cl,+56982348556,,0,Jefe de MKT
+108,colavarria,17890224-5,CRISTIAN,OLAVARRIA-BROKER,inversionco@urbani.cl,+56937435428,,0,Broker externo
+109,prueba,,Prueba,sistema - CS,cristian.e.santander.r@gmail.com,+56933319798,,0,Cliente B2B - Patagual Home
+110,cvergara,19907105-K,CONSTANZA,VERGARA,cvergara@grupopatagual.cl,+56949756067,,0,Cliente B2B - Patagual Home
+111,demourbani,,DEMO,URBANI,demourbanimobysuite@gmail.com,,,0,DEMO URBANI
+112,fvera,16282651-4,FANNY,VERA,fvera@urbani.cl,+56933801996,,0,Ejecutivo de ventas
+113,cnova,12181302-5,CLAUDIA,NOVA,cnova@urbani.cl,+56933937515,,0,Ejecutivo de ventas
+114,agreene,13650498-3,ALVARO,GREENE,agreene@grupopatagual.cl,+56966559496,,1,Cliente B2B - Patagual Home
+115,cwhittle,16662161-5,CHRISTINE,WHITTLE,cwhittle@urbani.cl,+56942320061,,0,Subgerente de Ventas Urbani
+116,fmaldonado,20020365-8,FRANCISCA,MALDONADO,fmaldonado@urbani.cl,+56940463055,,0,Administrador
+117,cneira,18771412-5,CAMILA,NEIRA,cneira@urbani.cl,,,0,Ejecutivo de ventas
+118,ifeliz,,PRUEBA,BROKER,,,,0,Ejecutivo de ventas
+119,propital_tl1,,Team Leader,1,cristian.e.santander.r@gmail.com,,,0,Broker externo
+120,pablo_propital,18965340-9,PROPITAL,PABLO TOLEDO,pablo@propital.com,+56995152400,,0,Broker externo
+121,tamara_contreras,18389083-2,TAMARA,CONTRERAS,tcontreras@urbani.cl,+56984788250,,1,ADMIN 2
+122,kmillalen,16156274-2,KARINA,MILLALEN,kmillalen@urbani.cl,9-42656772,,0,Ejecutivo de ventas
+123,nnavarro,18411890-4,NICOLAS,NAVARRO,nnavarro@urbani.cl,+56993370550,,0,Ejecutivo de ventas
+124,jorge@lidz.ai,19184502-1,JORGE,DE LA CARRERA,jorge@lidz.ai,56979925591,,0,Ejecutivo de ventas
+125,bhenning,,BASTIÁN,HENNING,bhenning@urbani.cl,+56979763016,,0,Subgerente de Ventas Urbani
+126,admin@propital.com,,ADM,PROPITAL,admin@propital.com,,,0,Administrador
+127,jcardenas,13319519-k,JOSÉ LUIS,CÁRDENAS SALDIVIA,ventas@urbani.cl,56989026071,,0,Broker externo
+128,dparra,12020243-K,DIEGO,PARRA,dparra@urbani.cl,56962493116,,0,Ejecutivo de ventas
+129,mburgos,14069602-1,MACKARENA,BURGOS,mburgos@urbani.cl,+56942656772,,1,Ejecutivo de ventas
+130,braulio.munnoz@gmail.com,17013994-1,BRAULIO,MUÑOZ,braulio.munoz@propital.com,56982644380,,0,Broker externo
+131,curra,18145207-2,CAROLINA,URRA,carolina.urra@urbani.cl,56962028006,,0,Broker externo
+132,nathalieurra@gmail.com,16516516-0,NATHALIE,DOSQUE,nathalieurra@gmail.com,56934468399,,0,Broker externo
+133,alvaro.sotomayor@propital.com,16099371-5,ALVARO,SOTOMAYOR,alvaro.sotomayor@propital.com,56998281147,,0,Broker externo
+134,mbaquerizo@urbani.cl,19139966-8,MARCELA,BAQUERIZO,mbaquerizo@urbani.cl,,,0,Ejecutivo de ventas
+135,barbara.llinas@propital.com,26808262-K,BARBARA,LLINAS,barbara.llinas@propital.com,956110799,,0,Broker externo
+136,lylian.herrera@propital.com,5903923-7,LYLIAN,HERRERA,lylian.herrera@propital.com,951487596,,0,Broker externo
+137,joselyn.villasmil@propital.com,25678789-K,JOSELYN,VILLASMIL,joselyn.villasmil@propital.com,976563421,,0,Broker externo
+138,kpiedra,10552992-9,KATHERINE,PIEDRA,kpiedra@urbani.cl,+56974202175,,1,Ejecutivo de ventas
+139,javier.aguirre@propital.com,10902050-8,JAVIER,AGUIRRE,javier.aguirre@propital.com,56984024857,,0,Broker externo
+140,gloria.orrego@propital.com,14032454-K,GLORIA,ORREGO,gloria.orrego@propital.com,+56976951874,,0,Broker externo
+141,bhernandez,17960712-3,BENJAMIN,HERNANDEZ,bhernandez@urbani.cl,+56920271385,,0,Ejecutivo de ventas
+142,susana.moenneloccoz@propital.com,10970932-8,SUSANA,MOENNE-LOCCOZ,susana.moenneloccoz@propital.com,56951909827,,0,Subgerente de Ventas Propital
+143,Camila Fernandez,,Camila,Fernandez,camila.fernandez@propital.com,,,0,Administrador
+144,Francisco Guardia,,Francisco,Guardia,francisco.guardia@propital.com,,,0,Administrador
+145,Douglas Cruz,,Douglas,Cruz,douglas.cruz@propital.com,,,0,Administrador
+146,Alejandro Vargas  ,,Alejandro,Vargas,alejandro.vargas@propital.com,,,0,Administrador
+147,Germán Garcia,,German,Garcia,german.garcia@propital.com,,,0,Administrador
+148,jose.acuna@propital.com,20868032-3,JOSÉ,ACUÑA,jose.acuna@propital.com,+56933751328,,0,Broker externo
+149,carole.caamano@propital.com,16010024-9,CAROLE,CAAMAÑO,carole.caamano@propital.com,+56972464109,,0,Broker externo
+150,dangelo.donoso@propital.com,17478756-5,DANGELO,DONOSO,dangelo.donoso@propital.com,+56931311861‬,,0,Broker externo
+151,olivia.duran@propital.com,17046555-5,MARÍA,DURAN,olivia.duran@propital.com,+56954148921,,0,Broker externo
+152,ericka.cabrera@propital.com,13104373-2,ERICKA,CABRERA,ericka.cabrera@propital.com,+56978648719,,0,Broker externo
+153,solange.castillo@propital.com,17090967-4,SOLANGE,CASTILLO,solange.castillo@propital.com,+56984807827,,0,Broker externo
+154,pablo.cabrera@propital.com,16601039-K,PABLO,CABRERA,pablo.cabrera@propital.com,+56993979663,,0,Subgerente de Ventas Propital
+155,oscar.galdames@propital.com,12114019-5,OSCAR,GALDAMES,oscar.galdames@propital.com,+56982137983,,0,Broker externo
+156,pol.prado@propital.com,20212649-9,POL,PRADO,pol.prado@propital.com,+56979174626,,0,Broker externo
+157,ricardo.barrera@propital.com,12654429-4,RICARDO,BARRERA,ricardo.barrera@propital.com,+56935336301,,0,Broker externo
+158,carolina.osuna@propital.com,25982791-4,LEYDI,OSUNA,carolina.osuna@propital.com,+56931711034,,0,Subgerente de Ventas Propital
+159,leonardo.barrera@propital.com,16732889-K,LEONARDO,BARRERA,leonardo.barrera@propital.com,+56920811312,,0,Subgerente de Ventas Propital
+160,api_urbani,1-9,Api,Urbani,,,,1,Administrador
+161,camila.guerrero@propital.com,16281683-1,CAMILA,GUERRERO,camila.guerrero@propital.com,+56961447057,,0,Subgerente de Ventas Propital
+162,crhistopher.navarrete@propital.com,19127741-4,CRHISTOPHER,NAVARRETE,crhistopher.navarrete@propital.com,+56998682205,,0,Broker externo
+163,tito.marin@propital.com,27099791-0,TITO,MARIN,tito.marin@propital.com,+56975609606,,0,Broker externo
+164,sergio.lastra@propital.com,18559414-9,SERGIO,LASTRA,sergio.lastra@propital.com,+56944445932,,0,Broker externo
+165,anamaria.goitia@propital.com,25562795-3,ANA MARIA,GOITIA,anamaria.goitia@propital.com,+56937457841,,0,Ejecutivo de ventas
+166,erika.marquez@propital.com,26312633-5,ERIKA,MARQUEZ,erika.marquez@propital.com,+56968953265,,0,Broker externo
+167,ema.vidal@propital.com,17393940-K,EMA,VIDAL,ema.vidal@propital.com,+56987555727,,0,Broker externo
+168,morhelia.vega@propita.com,25268391-7,MORHELIA,VEGA,morhelia.vega@propital.com,+56982912507,,0,Broker externo
+169,francisco.sanfurgo@propital.com,15309449-7,FRANCISCO,SANFURGO,francisco.sanfurgo@propital.com,+56971810195,,0,Broker externo
+170,nicolas.petrinovic@propital.com,16370309-2,NICOLAS,PETRINOVIC,nicolas.petrinovic@propital.com,+56940676514,,0,Broker externo
+171,nicolas.gaete@propital.com,19365292-1,NICOLAS,GAETE,nicolas.gaete@propital.com,+56956203125,,0,Broker externo
+172,marcia.barraza@propital.com,13765829-1,MARCIA,BARRAZA,marcia.barraza@propital.com,+56982848147,,0,Broker externo
+173,cristina.benavente@sisbrom.com,19322431-8,MARIA,BENAVENTE,cristina.benavente@sisbrom.com,988386022,,0,Cliente B2B - Patagual Home
+174,keilab.urbani@gmail.com,14302684-6,KEILA,BURGOS,keilab.urbani@gmail.com,+56999425001,,0,Broker externo
+175,ariquelme@urbani.cl,20021343-2,ALVARO,RIQUELME,ariquelme@urbani.cl,,,0,Administrador s/reportes
+176,Natalia.Cornejo,18144107-0,NATALIA,CORNEJO,natalia.cornejo@propital.com,,,0,Administrador
+177,rodrigo.poblete@propital.com,19033657-3,RODRIGO,POBLETE,rodrigo.poblete@propital.com,+56982398271,,0,Administrador
+178,nicolas@propital.com,14109470-k,NICOLAS,CABRERA,nicolas@propital.com,+56932370020,,0,Subgerente de Ventas Urbani
+179,chschussler@me.com,6949398-K,CHRISTIAN,SCHUSSLER,chschussler@me.com,412737373,,1,Cliente B2B - Patagual Home
+180,pbastidas,26258780-0,PATRICIA,BASTIDAS,ventas@urbani.cl,+56932408501,,0,Broker externo
+181,sapara,16592739-7,SOFIA,APARA,ventas@urbani.cl,+56981396691,,0,Broker externo
+182,lsandoval,16767496-8,LUIS,SANDOVAL,lsandoval@urbani.cl,+56938641861,,1,Ejecutivo de ventas
+183,elizabeth.garces@propital.com,14210325-7,ELIZABETH,GARCES,elizabeth.garces@propital.com,+56998855481,,0,Broker externo
+184,ncotal,16515387-1,NATHALIE,COTAL,ventas@urbani.cl,+56979150785,<br>,0,Broker externo
+185,ricardo.asmuru@propital.com,17598280-9,RICARDO,ASMURU,ricardo.asmuru@propital.com,+56995976237,,0,Gerente Comercial
+186,crodriguez@urbani.cl,16229664-7,CAMILA,RODRIGUEZ,crodriguez@urbani.cl,+56934680930,,1,Ejecutivo de ventas
+187,msanhueza@urbani.cl,15220092-7,MARÍA,SANHUEZA,msanhueza@urbani.cl,+56989102344,,0,Ejecutivo de ventas
+188,j.gonzalez,,JORGE,GONZALEZ,jorge.gonzalez@propital.com,+56936805033,,0,Broker externo
+189,T.GONZALEZ,,TAMARA,GONZALEZ,tamara.gonzalez@propital.com,,,0,Broker externo
+190,F.BOCOULT,,FRANCISCO,BOCOULT,fbocoult@propital.com,,,0,Broker externo
+191,F.ROSINI,,FLORENCIA,ROSINI,florencia.rosini@propital.com,,,0,Broker externo
+192,O.DURAN,,OLIVIA,DURAN,olivia.duran@propital.com,,,0,Broker externo
+193,A.GONZALEZ,,ANGEOLINA,GONZALEZ,angeolina.gonzalez@propital.com,,,0,Broker externo
+194,C.URRA,,CLAUDIA,URRA,claudia.urra@propital.com,,,0,Broker externo
+195,S.CESPEDES,,SOLANGE,CESPEDES,solange.cespedes@propital.com,,,0,Broker externo
+196,C.NAVARRETE,,CHRISTOPHER,NAVARRETE,crhistopher.navarrete@propital.com,998682205,,0,Broker externo
+197,A.GOITIA,,ANA,GOITIA,anamaria.goitia@propital.com,,,0,Broker externo
+198,vvinoli,,VANESSA,VIÑOLI,ventas@urbani.cl,,,0,Broker externo
+199,ccampbell,,CAMILA,CAMPBELL,ventas@urbani.cl,,,0,Broker externo
+200,C.ESCRIG,,CONTANZA,ESCRIG,constanza.escrig@propital.com,,,0,Broker externo
+201,lnavarrete,17347906-9,LEANDRO,NAVARRETE,lnavarrete@urbani.cl,+56952530837,,1,Marketing
+202,fletelier@urbani.cl,18106819-1,FABIAN,LETELIER,fletelier@urbani.cl,9-65820471,,0,Ejecutivo de ventas
+203,cparra,12922961-6,CLAUDIA,PARRA,cparra@urbani.cl,+56934819726,,0,Ejecutivo de ventas
+204,hmolina@evainmobiliaria.com ,,HERNAN,MOLINA,hmolina@evainmobiliaria.com,,,1,Cliente B2B - Patagual Home
+205,nquinelen@sebamar.cl,10577269-6,NANCY,QUIÑELEN,nquinelen@sebamar.cl,+56965972902,,0,Cliente B2B - Patagual Home
+206,pcruz@sebamar.cl,14405232-3,PATRICIA,CRUZ,pcruz@sebamar.cl,+56997019119,,1,Cliente B2B - Patagual Home
+207,javier.munoz@invchiloe.cl,17617330-0,JAVIER,MUÑOZ,javier.munoz@invchiloe.cl,+56934389937,,0,Cliente B2B - Patagual Home
+208,nmonsalves@urbani.cl,20161867-3,NICOLÁS,MONSALVES,nmonsalves@urbani.cl,+56984980997,,1,Administrador s/reportes
+209,alois,12162271-8,Alejandro Rodrigo ,Lois Soto,alejandro@greatmarketing.cl,,,0,Subgerente de Ventas Urbani
+210,chernandez@urbani.cl,18670901-2,CARLA,HERNANDEZ,chernandez@urbani.cl,+56933801996,,1,Ejecutivo de ventas
+211,pcabrera@grupopatagual.cl,16988644-K,PABLO,CONTRERAS,pcabrera@grupopatagual.cl,+56942807017,,1,Cliente B2B - Patagual Home
+212,felgarciavillalta@gmail.com,18446639-2,FELIPE,GARCÍA,felgarciavillalta@gmail.com,+56967007150,,0,Ejecutivo de ventas
+213,ltapiag,16763812-0,Leslie,Gatica,leslietagatica@hotmail.com,941781413,,0,Broker externo
+214,griverosr,17215116-7,Gustavo,Riveros Rivera,gf.riveros@gmail.com,+56999999999,,0,Broker externo
+215,vvillegas,19534575-9,Vanessa,Villegas Sepúlveda,vvillegas@urbani.cl,+56976511152,,1,Ejecutivo de ventas
+216,ssarzosav@gmail.com,18201312-9,SEBASTIAN,SARZOSA,ssarzosav@gmail.com,981298563,,0,Broker externo
+217,mduran@urbani.cl,12519603-9,MILISSENT,DURÁN,mduran@urbani.cl,,,0,Ejecutivo de ventas
+218,INVIERTE FELIZ,16724698-2,Invierte Feliz,BROKER,vendedorexterno@urbani.cl,46546465,,1,Ejecutivo de ventas
+219,kgonzalez,15838724-7,KARINA,GONZALEZ,kgonzalez@urbani.cl,+56977592657,,0,Subgerente de Ventas Urbani
+220,pauloaranis,18151071-4,Paulo Alexis,Aranis Arroyo,aranispaulo@gmail.com,+56978126960,,0,Broker externo
+221,caroburgos,15669632-3,Carolina,Burgos,carolina@gestionpluscl.com,+56975214481,,0,Broker externo
+222,ggonzalez,18828248-2,Gabriela,González,ggonzalez@urbani.cl,+56942656838,,0,Ejecutivo de ventas
+223,xigomez,15945328-6,Ximena,Gómez,ximenagomezctr@gmail.com,+56955555555,,0,Ejecutivo de ventas
+224,cjara@urbani.cl,20275007-9,CRISTOBAL,JARA,cjara@urbani.cl,,,0,Ejecutivo de ventas
+225,lcabezas,16676489-0,LUCILA,CABEZAS,lcabezas@urbani.cl,+56975198629,,1,Ejecutivo de ventas
+226,dmardones,18978743-K,DANIELA,MARDONES,dmardones@urbani.cl,+56942656838,,1,Ejecutivo de ventas
+230,ideruyt@urbani.cl,20619008-6,Isidora,De ruyt,ideruyt@urbani.cl,+56971214411,,1,Administrador
+231,BastianH,18404698-9,Bastian,Henning,bhenningb@gmail.com,+56979763016,,0,Ejecutivo de ventas
+232,csandoval,19715304-0,CAMILA,SANDOVAL,csandoval@urbani.cl,+56986356558,,0,Ejecutivo de ventas
+297,desarrollo@urbani.cl,15614810-5,Felipe ,Torres,desarrollo@urbani.cl,,,1,Administrador
+298,pezweb@gmail.com,15311636-9,Mauricio,Parada,pezweb@gmail.com,,,1,Administrador
+300,jrivas,20680626-5,Julian,Rivas,jrivas@urbani.cl,,,0,Ejecutivo de ventas
+303,alvaroriquelmeb.il@gmail.com,2003489-0,Ejecutivo de ,Prueba,ariquelme@urbani.cl,+56974537929,,0,Subgerente de Ventas Urbani
+304,pgoldberg@urbani.cl,14208367-1,PAMELA,GOLDBERG,pgoldberg@urbani.cl,,,1,Ejecutivo de ventas
+305,idonoso@urbani.cl,20161345-0,Isidora,Donoso,idonoso@urbani.cl,,,1,Jefe de MKT
+306,cmodinger,17631909-7,CAMILA,MÖDINGER,camimodinger@gmail.com,+56956296912,,0,Ejecutivo de ventas
+307,colavarria2025,17890224-5,Cristian,Olavarría ,cristian.olavasalazar@gmail.com,+56937435428,,0,Ejecutivo de ventas
+308,kamarquez,17891745-5,KATERINE,MARQUEZ,Katerine.marquez.alvarez@gmail.com,+56982044875,,0,Ejecutivo de ventas
+309,jluongo,16609152-7,Jose,Luongo,josetomasluongo@gmail.com,+56942482290,,0,Ejecutivo de ventas
+310,sotapia,15837867-1,Sofía,Tapia,sofia.tapia@gmail.com,+56999319495,,0,Ejecutivo de ventas
+311,vicarcamo,17631634-9,Viviana,Cárcamo,Viviana.soledad@live.cl,+56938990939,,0,Ejecutivo de ventas
+312,jotelgie,17796262-7,Joaquín,Telgie,telgiemorales@gmail.com,+56997430131,,0,Ejecutivo de ventas
+313,camiranda,20882503-8,Catalina,Miranda,cmirandagonza@gmail.com,+56994419408,,0,Ejecutivo de ventas
+314,majesus,15365629-0,María Jesús,Fernández,mjesusff@gmail.com,+56999690441,,0,Ejecutivo de ventas
+315,josetorres,16311851-3,José,Torres Almonacid,j.torres.a03@hotmail.com,+56971080534,,0,Ejecutivo de ventas
+316,cfigueroa,17.393.629-K,CARLA,FIGUEROA,cfigueroa@urbani.cl,+56938754019,,0,Ejecutivo de ventas
+317,jotorres,16311851-3,José Manuel,Torres Almonacid,j.torres.a03@hotmail.com,+56971080534,,0,Ejecutivo de ventas
+318,varojas,17890948-7,Yocelyn Valeria,Bozo Rojas,valeria.baza.rojas@gmail.com,+56959434508,,0,Ejecutivo de ventas
+319,mobysuite.plopez,,Priscilla,Lopez,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador
+320,Dhernandez,21.279.629-8,David Antonio ,Hernández López,Dhernandez@grupopatagual.cl,+56997700598,,1,Cliente B2B - Patagual Home
+321,pcampos,16.988.644-K,Pablo,Campos,pcampos@grupopatagual.cl,+56942807017,,1,Cliente B2B - Patagual Home
+322,jtoledo,19.107.074-7,Javier André, Toledo Parra,jtoledo@grupopatagual.cl,+56993240070,,1,Cliente B2B - Patagual Home
+323,rachata,24.548.354-6,Raúl Andrés,Achata Alcázar,rachata@grupopatagual.cl,+56966335473,,1,Cliente B2B - Patagual Home
+324,nicomonsalves18,20021343-2,Nico,PRueba,nicomonsalves18@gmail.com,,,1,Cliente B2B - Patagual Home
+325,mobysuite.gchavez,,Genesis,Chavez,notificaciones@mobysuite.com,+56229589827,,1,Ejecutivo de ventas
+326,mibacache,19577629-6,Marcelo Alejandro,Ibacache Lazo,mibacache@urbani.cl,+56953206666,,1,Ejecutivo de ventas
+327,amontecino,16037638-4,Alejandra ,Montecino,amontecino@urbani.cl,+56942656838,,1,Ejecutivo de ventas
+328,mobysuite.dyarce,,Dominique,Oyarce,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador
+329,mobysuite.ayañez,,Angel,Yañez,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador
+330,fmunoz,21667103-1,Felipe ,Muñoz,fmunoz@urbani.cl,+56982228290,,1,Contabilidad
+331,mobysuite.lhernandez,,Lucas,Hernandez,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador
+332,tomasrodriguez,19090876-3,Jose Tomas,Rodriguez Varela,josetomasrodriguezvarela@gmail.com,+56991583586,,0,Ejecutivo de ventas
+333,VENTAEXTERNA,99999999-9,VENTA,EXTERNA,comercial@urbani.cl,,,1,Ejecutivo de ventas
+335,mobysuite.rfernandes,,Raphael,Fernandes,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador
+336,mobysuite.iriveros,,Iván,Riveros,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador
+337,mpvera,12181744-6,María Paz,Vera,mpvera@urbani.cl,,,1,Contabilidad
+338,mobysuite.ivergara,,Sebastian,Vergara,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador
+339,fgarciah@urbani.cl,15626634-5,Fernando,Garcia Huidobro,fgarciah@urbani.cl,,,1,Administrador
+340,mobysuite.pgutierrez,,Pablo,Gutierrez,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador
+341,administracion,,Administrador,Urbani,pezweb@gmail.com,,,1,Administrador
+342,amatamala,14563853-4,Alfredo Esteban,Matamala Inzunza,amatamalainzunza@gmail.com,+56952026285,,1,Ejecutivo de ventas
+343,mobysuite.gmedina,,Gian,Medina,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador
+344,vorellana,17747643-9,Viviana Macarena,Orellana Duran,vorellana@urbani.cl,,,0,Ejecutivo de ventas
+345,aalnbornoz,20515348-9,Anahi ,Albornoz,anahi.albnornoz.g@gmail.com,,,1,Ejecutivo de ventas
+346,jhernandez,19898408-6,Javiera,Hernandez,jhernandez@urbani.cl,,,1,Ejecutivo de ventas
+347,aviveros,19109357-7,Anabell,Viveros,aviveros@urbani.cl,,,1,Ejecutivo de ventas
+348,mvenegas,18.809.036-2,Moises Alexander ,Venegas Montt,moisesvenegasmontt@gmail.com,,,1,Ejecutivo de ventas
+349,cgaticaf,20694804-3,Catalina Belén,Gatica Fernández,cgaticaf@icomercial.ucsc.cl,+56977411964,,1,Ejecutivo de ventas
+350,cpetermann,20.707.366-0,Camila ,Petermann,Camilapetermannv@gmail.com,+56978985399,,1,EXTERNO
+351,mgalletti,18.144.223-9,Matías,Galletti,Galletti443@gmail.com,+56979556104,,1,EXTERNO
+352,jsoto,19.834.929-1,Javiera ,Constanza,Alianzas@grupounity.cl,+56975346481,,1,EXTERNO
+353,Amunoz,21123572-1,Antonia ,Muñoz Martinez,munozantonia296@gmail.com,,,1,Ejecutivo de ventas
+354,pespinoza,15551724-7,Paula ,Espinoza Cabrera,espinoza.paula.c@gmail.com,,,1,EXTERNO
+355,pgodoy,14351545-1,Paola,Godoy,pgodoy@urbani.cl,+56942055354,,1,Ejecutivo de ventas
+356,pordenes,15.220.512-0,Priscila,Ordenes Villar,pordenes@jce.cl,+56976683978,,1,Cliente B2B - Patagual Home
+357,daravenar,21089212-5,Diego Albano,Aravena Rojas,diegoaarojas@gmail.com,+56985295503,,1,Ejecutivo de ventas
+358,Vprovoste,99999999-9,Valentina,Provoste,practicasubsidio@urbani.cl,,,1,Ejecutivo de ventas
+359,mobysuite.jbravo,,Javier,Bravo,notificaciones@mobysuite.com,+56 2 2958 9827,,1,Administrador

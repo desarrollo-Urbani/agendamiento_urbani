@@ -17,13 +17,22 @@ function FieldLabel({ children }) {
 function ActionPanel({ activeEvent, nextSlots, newAvailabilityId, setNewAvailabilityId,
   clientName, setClientName, clientEmail, setClientEmail, clientPhone, setClientPhone, clientRut, setClientRut,
   actionLoading, reserveFromCalendar, rescheduleFromCalendar, cancelFromCalendar,
-  canBlock, blockReason, setBlockReason, blockSelectedSlot
+  canBlock, blockReason, setBlockReason, blockSelectedSlot,
+  canManageVisits
 }) {
   if (!activeEvent) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
         <span className="material-symbols-outlined text-on-surface-variant/40" style={{ fontSize: 48 }}>touch_app</span>
         <p className="text-sm text-on-surface-variant font-medium">Selecciona un evento del calendario<br/>para ver las opciones disponibles.</p>
+      </div>
+    );
+  }
+
+  if (!canManageVisits) {
+    return (
+      <div className="p-3 bg-surface-container-low rounded-md text-xs text-on-surface-variant font-medium">
+        Perfil lector: solo visualizacion de calendario y citas.
       </div>
     );
   }
@@ -242,6 +251,11 @@ function ActionPanel({ activeEvent, nextSlots, newAvailabilityId, setNewAvailabi
 
 export default function CalendarioPage() {
   const { user } = useAuth();
+  const normalizedRole = String(user?.role || '').toLowerCase() === 'executive'
+    ? 'usuario'
+    : String(user?.role || '').toLowerCase();
+  const isLector = normalizedRole === 'lector';
+  const canManageVisits = normalizedRole === 'admin' || normalizedRole === 'usuario';
   const today = new Date().toISOString().slice(0, 10);
   const plusFourteen = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const [projects, setProjects] = useState([]);
@@ -270,13 +284,24 @@ export default function CalendarioPage() {
   }, []);
 
   const loadProjects = async () => {
-    setProjects(await api('/api/projects'));
+    const data = await api('/api/projects');
+    const arr = Array.isArray(data) ? data : [];
+    setProjects(arr);
+    if (isLector && !projectId && arr[0]) {
+      setProjectId(String(arr[0].id));
+    }
   };
 
   const loadCalendar = async () => {
     setLoading(true);
     setError('');
     const q = new URLSearchParams();
+    if (isLector && !projectId) {
+      setLoading(false);
+      setCalendar({ availability: [], visits: [], blocks: [] });
+      setError('Debes seleccionar un proyecto para visualizar el calendario.');
+      return;
+    }
     if (projectId) q.set('projectId', projectId);
     q.set('from', toIso(from));
     q.set('to', toIso(to, true));
@@ -627,7 +652,8 @@ export default function CalendarioPage() {
               reserveFromCalendar={reserveFromCalendar}
               rescheduleFromCalendar={rescheduleFromCalendar}
               cancelFromCalendar={cancelFromCalendar}
-              canBlock={user?.role === 'admin'}
+              canBlock={normalizedRole === 'admin'}
+              canManageVisits={canManageVisits}
               blockReason={blockReason}
               setBlockReason={setBlockReason}
               blockSelectedSlot={blockSelectedSlot}

@@ -168,6 +168,16 @@ async function listVisits(filters) {
     params.push(filters.to);
     conditions.push(`v.ends_at <= $${params.length}`);
   }
+  if (filters.creatorUserId) {
+    params.push(filters.creatorUserId);
+    conditions.push(`EXISTS (
+      SELECT 1 FROM audit_logs al
+      WHERE al.action = 'create_visit'
+        AND al.user_id = $${params.length}
+        AND al.entity_type = 'visit'
+        AND al.entity_id = v.id::text
+    )`);
+  }
   const { rows } = await q(
     `SELECT v.*, e.name AS executive_name, e.email AS executive_email, p.name AS project_name
      FROM visits v
@@ -217,6 +227,16 @@ async function listCalendar(filters) {
   }
   const a = buildParams('e.project_id', 'a.slot_start', 'a.slot_end');
   const v = buildParams('v.project_id', 'v.starts_at', 'v.ends_at');
+  if (filters.creatorUserId) {
+    v.vals.push(filters.creatorUserId);
+    v.where += ` AND EXISTS (
+      SELECT 1 FROM audit_logs al
+      WHERE al.action = 'create_visit'
+        AND al.user_id = $${v.vals.length}
+        AND al.entity_type = 'visit'
+        AND al.entity_id = v.id::text
+    )`;
+  }
   const b = buildParams('e.project_id', 'b.block_start', 'b.block_end');
 
   const [aRes, vRes, bRes] = await Promise.all([
@@ -403,6 +423,37 @@ async function deleteBlock(blockId, client) {
   await q('DELETE FROM blocks WHERE id = $1', [blockId], client);
 }
 
+async function countBookedVisitsForExecutiveByRange({ executiveId, projectId, from, to }) {
+  const params = [executiveId, from, to];
+  const projectFilter = projectId ? 'AND v.project_id = $4' : '';
+  if (projectId) params.push(projectId);
+  const { rows } = await q(
+    `SELECT COUNT(*)::int AS total
+     FROM visits v
+     WHERE v.executive_id = $1
+       AND v.status = 'booked'
+       AND v.starts_at >= $2
+       AND v.starts_at <= $3
+       ${projectFilter}`,
+    params
+  );
+  return rows[0] ? Number(rows[0].total) : 0;
+}
+
+async function wasVisitCreatedByUser(visitId, userId) {
+  const { rows } = await q(
+    `SELECT 1
+     FROM audit_logs
+     WHERE action = 'create_visit'
+       AND user_id = $1
+       AND entity_type = 'visit'
+       AND entity_id = $2
+     LIMIT 1`,
+    [userId, String(visitId)]
+  );
+  return rows.length > 0;
+}
+
 module.exports = {
   inTransaction,
   listProjects,
@@ -438,5 +489,7 @@ module.exports = {
   cancelVisit,
   deleteBlock,
   findConflictForSlot,
-  createAvailability
+  createAvailability,
+  countBookedVisitsForExecutiveByRange,
+  wasVisitCreatedByUser
 };

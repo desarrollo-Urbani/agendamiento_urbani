@@ -32,7 +32,12 @@ async function getProjectHistory(projectId, filters) {
   return repo.listProjectAuditLogs(projectId, filters);
 }
 
+async function getAuditLogs(filters) {
+  return repo.listAuditLogs(filters || {});
+}
+
 module.exports = {
   logAudit,
-  getProjectHistory
+  getProjectHistory,
+  getAuditLogs
 };

@@ -22,7 +22,8 @@ const { endMobyPool } = require('../src/db/mobyConnection');
 
 const SUPABASE_URL = ENV.supabaseUrl;
 const SERVICE_KEY = ENV.supabaseServiceKey;
-const ONLY_ALLOWED_EMAIL = String(ENV.onlyAllowedEmail || 'desarrollo@urbani.cl').toLowerCase();
+const ONLY_ALLOWED_EMAIL = String(ENV.onlyAllowedEmail || '').toLowerCase();
+const USE_EMAIL_FILTER = Boolean(ONLY_ALLOWED_EMAIL);
 const applyMode = process.argv.includes('--apply');
 const dryRun = !applyMode;
 
@@ -167,10 +168,16 @@ async function run() {
   // 1. Obtener usuarios activos de Moby
   console.log('Leyendo USUARIO_VIEW (ACTIVO=1)...');
   const allMobyUsers = await mobyRepo.getActiveUsers();
-  const mobyUsers = allMobyUsers.filter((u) => u.email === ONLY_ALLOWED_EMAIL);
+  const mobyUsers = USE_EMAIL_FILTER
+    ? allMobyUsers.filter((u) => u.email === ONLY_ALLOWED_EMAIL)
+    : allMobyUsers;
   const mobyMap = new Map(mobyUsers.map((u) => [u.email, u]));
   console.log(`  → ${allMobyUsers.length} usuarios activos con email válido`);
-  console.log(`  → ${mobyUsers.length} usuarios tras filtro ONLY_ALLOWED_EMAIL=${ONLY_ALLOWED_EMAIL}\n`);
+  if (USE_EMAIL_FILTER) {
+    console.log(`  → ${mobyUsers.length} usuarios tras filtro ONLY_ALLOWED_EMAIL=${ONLY_ALLOWED_EMAIL}\n`);
+  } else {
+    console.log(`  → ${mobyUsers.length} usuarios a sincronizar (sin filtro por email)\n`);
+  }
 
   // 2. Obtener usuarios actuales en Supabase Auth
   console.log('Leyendo usuarios Supabase Auth...');
@@ -236,8 +243,8 @@ async function run() {
   for (const [supaEmail, supaUser] of supabaseMap) {
     if (mobyMap.has(supaEmail)) continue;       // sigue activo en Moby
     if (isBanned(supaUser)) continue;           // ya estaba baneado
-    // Mantener disponible solo el correo permitido
-    if (supaEmail === ONLY_ALLOWED_EMAIL) continue;
+    // Si hay filtro, mantener ese correo permitido.
+    if (USE_EMAIL_FILTER && supaEmail === ONLY_ALLOWED_EMAIL) continue;
 
     console.log(`[BAN]    ${maskEmail(supaEmail)} (no está activo en Moby)`);
     if (!dryRun) {
